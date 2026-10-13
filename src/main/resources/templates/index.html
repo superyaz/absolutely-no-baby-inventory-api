@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Absolutely No Baby · Inventario</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/styles.css" />
+</head>
+
+<body>
+    <div id="app">
+        <header class="topbar">
+            <div class="topbar-inner">
+                <button class="brand" data-view="dashboard" aria-label="Ir al dashboard">
+            <span class="brand-symbol" aria-hidden="true">
+              <svg viewBox="0 0 100 100">
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="42"
+                  fill="none"
+                  stroke="#dc2626"
+                  stroke-width="11"
+                />
+                <circle cx="50" cy="36" r="11" fill="#f5f5f5" />
+                <path
+                  d="M43 46c-2 0-5 3-5 8 0 6 3 10 7 12h10c4-2 7-6 7-12 0-5-3-8-5-8zM40 48l-8 10c-2 2 1 5 3 4l8-9zm20 0 8 10c2 2-1 5-3 4l-8-9zM42 65c-3 2-6 6-5 12 1 4 5 5 8 1 2-4 1-9 1-13zm16 0c3 2 6 6 5 12-1 4-5 5-8 1-2-4-1-9-1-13z"
+                  fill="#f5f5f5"
+                />
+                <line
+                  x1="22"
+                  y1="22"
+                  x2="78"
+                  y2="78"
+                  stroke="#dc2626"
+                  stroke-width="10"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </span>
+            <span class="brand-copy"
+              ><strong>ABSOLUTELY</strong
+              ><small>NO BABY · INVENTARIO</small></span
+            >
+          </button>
+
+                <div class="sync-pill"><i></i><span>↯</span> Sync Aburrá En Vivo</div>
+
+                <div class="header-actions">
+                    <button class="btn btn-dark" id="barcodeBtn">
+              ▣ <span>Lector Barcode</span>
+            </button>
+                    <button class="btn btn-dark" id="labelsBtn">
+              ▤ <span>Etiquetas</span>
+            </button>
+                    <button class="btn btn-red" id="newProductBtn">
+              ＋ <span>Nueva Prenda (7D)</span>
+            </button>
+                    <div class="dropdown-wrap">
+                        <button class="selector" id="storeBtn">
+                ⌂
+                <span
+                  ><small>PUNTO DE VENTA</small
+                  ><b id="currentStore">Medellín Centro</b></span
+                >⌄
+              </button>
+                        <div class="dropdown" id="storeMenu"></div>
+                    </div>
+                    <div class="dropdown-wrap">
+                        <button class="selector user-selector" id="userBtn">
+                <span class="avatar">C</span
+                ><span class="user-copy"
+                  ><b>Carlos</b><small>Admin General</small></span
+                >⌄
+              </button>
+                        <div class="dropdown user-menu" id="userMenu"></div>
+                    </div>
+                    <button class="btn btn-dark architecture" id="architectureBtn">
+              ◈ <span>Arquitectura & CI/CD</span>
+            </button>
+                    <button class="mobile-menu" id="mobileBtn">☰</button>
+                </div>
+            </div>
+            <nav class="nav-tabs" id="navTabs"></nav>
+        </header>
+
+        <main class="main" id="main"></main>
+    </div>
+
+    <div class="modal-backdrop hidden" id="modalBackdrop">
+        <div class="modal" id="modal"></div>
+    </div>
+    <script src="js/app.js"></script>
+</body>
+
+</html>
