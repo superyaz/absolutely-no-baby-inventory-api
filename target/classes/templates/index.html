@@ -1,100 +1,1362 @@
 <!doctype html>
-<html lang="es">
-
-<head>
+<html lang="es" data-theme="light" xmlns:th="http://www.thymeleaf.org">
+  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f5f8f8" />
     <title>Absolutely No Baby · Inventario</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="css/styles.css" />
-</head>
-
-<body>
+    <link rel="icon" type="image/png" th:href="@{/img/logo-dark.png}" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    />
+    <link rel="stylesheet" th:href="@{/css/styles.css}" />
+  </head>
+  <body>
     <div id="app">
-        <header class="topbar">
-            <div class="topbar-inner">
-                <button class="brand" data-view="dashboard" aria-label="Ir al dashboard">
+      <header class="topbar">
+        <div class="topbar-inner">
+          <button
+            class="brand"
+            data-view="dashboard"
+            aria-label="Ir al dashboard"
+            type="button"
+          >
             <span class="brand-symbol" aria-hidden="true">
-              <svg viewBox="0 0 100 100">
-                <circle
-                  cx="50"
-                  cy="50"
-                  r="42"
-                  fill="none"
-                  stroke="#dc2626"
-                  stroke-width="11"
-                />
-                <circle cx="50" cy="36" r="11" fill="#f5f5f5" />
-                <path
-                  d="M43 46c-2 0-5 3-5 8 0 6 3 10 7 12h10c4-2 7-6 7-12 0-5-3-8-5-8zM40 48l-8 10c-2 2 1 5 3 4l8-9zm20 0 8 10c2 2-1 5-3 4l-8-9zM42 65c-3 2-6 6-5 12 1 4 5 5 8 1 2-4 1-9 1-13zm16 0c3 2 6 6 5 12-1 4-5 5-8 1-2-4-1-9-1-13z"
-                  fill="#f5f5f5"
-                />
-                <line
-                  x1="22"
-                  y1="22"
-                  x2="78"
-                  y2="78"
-                  stroke="#dc2626"
-                  stroke-width="10"
-                  stroke-linecap="round"
-                />
-              </svg>
+              <img class="logo-dark" src="/img/logo-dark.png" alt="" />
+              <img class="logo-light" src="/img/logo-light.png" alt="" />
             </span>
             <span class="brand-copy"
-              ><strong>ABSOLUTELY</strong
-              ><small>NO BABY · INVENTARIO</small></span
+              ><strong>ABSOLUTELY NO BABY</strong
+              ><small>SISTEMA GESTIÓN · INVENTARIO</small></span
             >
           </button>
 
-                <div class="sync-pill"><i></i><span>↯</span> Sync Aburrá En Vivo</div>
+          <div class="sync-pill"><i></i><span>↯</span> Sync Aburrá En Vivo</div>
 
-                <div class="header-actions">
-                    <button class="btn btn-dark" id="barcodeBtn">
-              ▣ <span>Lector Barcode</span>
+          <div class="header-actions">
+            <button
+              class="theme-toggle"
+              id="themeToggle"
+              type="button"
+              aria-label="Activar modo oscuro"
+              aria-pressed="false"
+              title="Activar modo oscuro"
+            >
+              <i class="fa-solid fa-sun" aria-hidden="true"></i>
             </button>
-                    <button class="btn btn-dark" id="labelsBtn">
-              ▤ <span>Etiquetas</span>
+            <button class="btn btn-dark" id="barcodeBtn" type="button">
+              <i class="fa-solid fa-barcode"></i> <span>Lector Barcode</span>
             </button>
-                    <button class="btn btn-red" id="newProductBtn">
-              ＋ <span>Nueva Prenda (7D)</span>
+            <button class="btn btn-dark" id="labelsBtn" type="button">
+              <i class="fa-solid fa-print"></i> <span>Etiquetas</span>
             </button>
-                    <div class="dropdown-wrap">
-                        <button class="selector" id="storeBtn">
-                ⌂
+            <button class="btn btn-red" id="newProductBtn" type="button">
+              <i class="fa-solid fa-plus"></i> <span>Nueva Prenda (8D)</span>
+            </button>
+            <div class="dropdown-wrap">
+              <button
+                class="selector"
+                id="storeBtn"
+                type="button"
+                aria-expanded="false"
+                aria-controls="storeMenu"
+              >
+                <i class="fa-solid fa-store" aria-hidden="true"></i>
                 <span
                   ><small>PUNTO DE VENTA</small
                   ><b id="currentStore">Medellín Centro</b></span
-                >⌄
+                >
+                <i
+                  class="fa-solid fa-chevron-down dropdown-arrow"
+                  aria-hidden="true"
+                ></i>
               </button>
-                        <div class="dropdown" id="storeMenu"></div>
-                    </div>
-                    <div class="dropdown-wrap">
-                        <button class="selector user-selector" id="userBtn">
+              <div class="dropdown" id="storeMenu">
+                <div class="drop-title">Puntos de venta · Valle de Aburrá</div>
+                <button class="drop-item active" type="button" data-store="med">
+                  <span><b>Medellín Centro</b><small>Medellín</small></span>
+                </button>
+                <button class="drop-item" type="button" data-store="bel">
+                  <span><b>Bello</b><small>Bello</small></span>
+                </button>
+                <button class="drop-item" type="button" data-store="sab">
+                  <span><b>Sabaneta</b><small>Sabaneta</small></span>
+                </button>
+                <button class="drop-item" type="button" data-store="env">
+                  <span><b>Envigado</b><small>Envigado</small></span>
+                </button>
+                <button class="drop-item" type="button" data-store="iti">
+                  <span><b>Itagüí</b><small>Itagüí</small></span>
+                </button>
+                <button class="drop-item" type="button" data-store="cedi">
+                  <span><b>CEDI Aburrá</b><small>Medellín</small></span
+                  ><span class="drop-tag">CEDI</span>
+                </button>
+              </div>
+            </div>
+            <div class="dropdown-wrap">
+              <button
+                class="selector user-selector"
+                id="userBtn"
+                type="button"
+                aria-expanded="false"
+                aria-controls="userMenu"
+              >
                 <span class="avatar">C</span
                 ><span class="user-copy"
                   ><b>Carlos</b><small>Admin General</small></span
-                >⌄
+                >
+                <i
+                  class="fa-solid fa-chevron-down dropdown-arrow"
+                  aria-hidden="true"
+                ></i>
               </button>
-                        <div class="dropdown user-menu" id="userMenu"></div>
-                    </div>
-                    <button class="btn btn-dark architecture" id="architectureBtn">
-              ◈ <span>Arquitectura & CI/CD</span>
-            </button>
-                    <button class="mobile-menu" id="mobileBtn">☰</button>
-                </div>
+              <div class="dropdown user-menu" id="userMenu">
+                <div class="drop-title">Usuario activo</div>
+                <button class="drop-item active" type="button">
+                  <span
+                    ><b>Carlos</b
+                    ><small>carlos@absolutelynobaby.com</small></span
+                  ><span class="drop-tag">ADMIN</span>
+                </button>
+                <button class="drop-item" type="button">
+                  <span><b>Laura</b><small>Admin Tienda · Bello</small></span>
+                </button>
+                <button class="drop-item" type="button">
+                  <span
+                    ><b>María</b><small>Operativo / POS · Envigado</small></span
+                  >
+                </button>
+              </div>
             </div>
-            <nav class="nav-tabs" id="navTabs"></nav>
-        </header>
+            <button
+              class="mobile-menu"
+              id="mobileBtn"
+              type="button"
+              aria-label="Abrir menú"
+              aria-expanded="false"
+            >
+              ☰
+            </button>
+          </div>
+        </div>
+        <nav class="nav-tabs" id="navTabs" aria-label="Navegación principal">
+          <button class="nav-tab active" type="button" data-view="dashboard">
+            Dashboard
+          </button>
+          <button class="nav-tab" type="button" data-view="inventory">
+            Inventario &amp; Tallas
+          </button>
+          <button class="nav-tab" type="button" data-view="movements">
+            Entradas &amp; Salidas
+          </button>
+          <button class="nav-tab" type="button" data-view="transfers">
+            Transferencias <span class="badge">2</span>
+          </button>
+          <button class="nav-tab" type="button" data-view="counts">
+            Conteo Físico
+          </button>
+          <button class="nav-tab" type="button" data-view="alerts">
+            Alertas Stock <span class="badge red">3</span>
+          </button>
+        </nav>
+      </header>
 
-        <main class="main" id="main"></main>
+      <main class="main" id="main">
+        <section class="view active" data-section="dashboard">
+          <div class="hero">
+            <span class="pill red"
+              >PUNTO ACTIVO · <span data-store-name>Medellín Centro</span></span
+            >
+            <h1>
+              Control de inventario.<br /><span style="color: #087f8c"
+                >Sin perder el ritmo.</span
+              >
+            </h1>
+            <p>
+              Centraliza existencias, movimientos y transferencias entre los
+              puntos de venta del Valle de Aburrá. Todo movimiento queda trazado
+              por usuario, tienda y producto.
+            </p>
+
+            <div class="hero-actions">
+              <button class="btn btn-red" type="button" data-action="barcode">
+                <i class="fa-solid fa-barcode" aria-hidden="true"></i>
+                Escanear producto
+              </button>
+
+              <button class="btn" type="button" data-action="new">
+                <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                Nueva prenda (8D)
+              </button>
+
+              <button class="btn" type="button" data-view="transfers">
+                <i class="fa-solid fa-right-left" aria-hidden="true"></i>
+                Gestionar transferencias
+              </button>
+
+              <button class="btn" type="button" data-view="alerts">
+                <i
+                  class="fa-solid fa-triangle-exclamation"
+                  aria-hidden="true"
+                ></i>
+                Ver alertas
+              </button>
+            </div>
+          </div>
+
+          <div class="stats">
+            <div class="stat">
+              <div class="stat-head">
+                <span>Existencias actuales</span
+                ><span class="stat-icon">
+                  <i class="fa-solid fa-boxes-stacked"></i>
+                </span>
+              </div>
+              <div class="stat-value">101</div>
+              <div class="stat-foot">unids. · +8.4% vs. mes anterior</div>
+            </div>
+            <div class="stat">
+              <div class="stat-head">
+                <span>Valor inventario</span
+                ><span class="stat-icon">
+                  <i class="fa-solid fa-sack-dollar"></i>
+                </span>
+              </div>
+              <div class="stat-value">$ 12.480.000</div>
+              <div class="stat-foot">COP · Costo estimado</div>
+            </div>
+            <div class="stat">
+              <div class="stat-head">
+                <span>Alertas de stock</span
+                ><span class="stat-icon warning">
+                  <i class="fa-solid fa-triangle-exclamation"></i>
+                </span>
+              </div>
+              <div class="stat-value">3</div>
+              <div class="stat-foot">SKUs · Requieren atención</div>
+            </div>
+            <div class="stat">
+              <div class="stat-head">
+                <span>Transferencias pendientes</span
+                ><span class="stat-icon">
+                  <i class="fa-solid fa-truck-fast"></i>
+                </span>
+              </div>
+              <div class="stat-value">2</div>
+              <div class="stat-foot">activas · 1 en tránsito</div>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="card">
+              <div class="card-head">
+                <div class="card-title">Movimientos recientes</div>
+                <button class="btn" type="button" data-view="movements">
+                  Ver historial
+                </button>
+              </div>
+              <div class="card-body">
+                <div class="list">
+                  <div class="list-row">
+                    <div class="list-main">
+                      <strong>Camiseta Básica Rebel</strong
+                      ><small
+                        ><span class="mono">3103015</span> · Medellín Centro ·
+                        06 Oct 2026 · 14:32</small
+                      >
+                    </div>
+                    <div class="value-right">
+                      <span class="pill green">ENTRADA</span><br /><span
+                        style="color: #eee"
+                        >24 unid.</span
+                      >
+                    </div>
+                  </div>
+                  <div class="list-row">
+                    <div class="list-main">
+                      <strong>Vestido Mini Riot</strong
+                      ><small
+                        ><span class="mono">4206021</span> · Bello · 06 Oct 2026
+                        · 13:05</small
+                      >
+                    </div>
+                    <div class="value-right">
+                      <span class="pill red">SALIDA VENTA</span><br /><span
+                        style="color: #eee"
+                        >2 unid.</span
+                      >
+                    </div>
+                  </div>
+                  <div class="list-row">
+                    <div class="list-main">
+                      <strong>Pantalón Cargo Kids</strong
+                      ><small
+                        ><span class="mono">5104087</span> · CEDI Aburrá · 06
+                        Oct 2026 · 11:48</small
+                      >
+                    </div>
+                    <div class="value-right">
+                      <span class="pill amber">TRANSFERENCIA SALIDA</span
+                      ><br /><span style="color: #eee">4 unid.</span>
+                    </div>
+                  </div>
+                  <div class="list-row">
+                    <div class="list-main">
+                      <strong>Camisa Denim Baby</strong
+                      ><small
+                        ><span class="mono">4102034</span> · Medellín Centro ·
+                        05 Oct 2026 · 17:21</small
+                      >
+                    </div>
+                    <div class="value-right">
+                      <span class="pill red">AJUSTE CONTEO NEGATIVO</span
+                      ><br /><span style="color: #eee">1 unid.</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-head">
+                <div class="card-title">Acciones rápidas</div>
+              </div>
+              <div class="card-body">
+                <div class="quick-grid">
+                  <button class="quick" type="button" data-view="inventory">
+                    <strong>
+                      <i
+                        class="fa-solid fa-boxes-stacked"
+                        aria-hidden="true"
+                      ></i>
+                      Consultar inventario </strong
+                    ><span>Por tienda, talla, color y referencia.</span>
+                  </button>
+                  <button class="quick" type="button" data-action="new">
+                    <strong>
+                      <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                      Crear producto</strong
+                    ><span>Generar código único de 7 dígitos.</span>
+                  </button>
+                  <button class="quick" type="button" data-action="barcode">
+                    <strong>
+                      <i class="fa-solid fa-barcode" aria-hidden="true"></i>
+                      Leer barcode</strong
+                    ><span>Buscar rápidamente una referencia.</span>
+                  </button>
+                  <button class="quick" type="button" data-view="counts">
+                    <strong>
+                      <i
+                        class="fa-solid fa-clipboard-check"
+                        aria-hidden="true"
+                      ></i>
+                      Conteo físico</strong
+                    ><span>Conciliar físico contra sistema.</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="view" data-section="inventory">
+          <div class="toolbar">
+            <div>
+              <div class="eyebrow">Absolutely No Baby · Inventario</div>
+              <h1 class="page-title">Inventario &amp; Tallas</h1>
+              <div class="subtle">
+                Existencias independientes por tienda, referencia, talla y
+                color.
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-body">
+              <div class="toolbar">
+                <div class="filters inventory-filters-premium">
+                  <input
+                    class="input"
+                    id="inventorySearch"
+                    placeholder="Buscar código, nombre o color…"
+                  />
+
+                  <select class="select" id="sizeFilter">
+                    <option value="">Todas las tallas</option>
+                  </select>
+
+                  <select class="select" id="groupFilter">
+                    <option value="">Todos los grupos</option>
+                  </select>
+
+                  <select class="select" id="typeFilter">
+                    <option value="">Todos los tipos</option>
+                  </select>
+                </div>
+                <button class="btn btn-red" type="button" data-action="new">
+                  <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                  Nueva prenda
+                </button>
+              </div>
+              <div class="table-wrap">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>Referencia</th>
+                      <th>Producto</th>
+                      <th>Talla / color</th>
+                      <th>Stock</th>
+                      <th>Mín.</th>
+                      <th>Temporada</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody id="inventoryRows">
+                    <tr>
+                      <td colspan="7">Cargando inventario...</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="view" data-section="movements">
+          <div class="toolbar">
+            <div>
+              <div class="eyebrow">Absolutely No Baby · Inventario</div>
+              <h1 class="page-title">Entradas &amp; Salidas</h1>
+              <div class="subtle">
+                Historial auditable de operaciones de inventario.
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-body">
+              <div class="toolbar">
+                <div class="filters">
+                  <input
+                    class="input"
+                    id="movementSearch"
+                    placeholder="Buscar producto, SKU o documento…"
+                  /><select class="select" id="movementTypeFilter">
+                    <option value="">Todos los movimientos</option>
+                    <option value="ENTRADA">Entradas</option>
+                    <option value="SALIDA">Salidas</option>
+                    <option value="AJUSTE">Ajustes</option>
+                    <option value="DEVOLUCION">Devoluciones</option></select
+                  ><select class="select" id="movementDateFilter">
+                    <option value="">Últimos 30 días</option>
+                    <option>Hoy</option>
+                    <option>Esta semana</option>
+                  </select>
+                </div>
+                <button
+                  class="btn btn-red"
+                  type="button"
+                  data-action="movement"
+                >
+                  <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                  Registrar movimiento
+                </button>
+              </div>
+              <div class="table-wrap">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>Fecha</th>
+                      <th>Movimiento</th>
+                      <th>Producto</th>
+                      <th>Tienda</th>
+                      <th>Cantidad</th>
+                      <th>Usuario</th>
+                      <th>Motivo</th>
+                    </tr>
+                  </thead>
+                  <tbody id="movementRows">
+                    <tr>
+                      <td>06 Oct 2026 · 14:32</td>
+                      <td><span class="pill green">ENTRADA</span></td>
+                      <td>
+                        <b>Camiseta Básica Rebel</b>
+                        <div class="product-meta mono">3103015</div>
+                      </td>
+                      <td>Medellín Centro</td>
+                      <td class="qty">24</td>
+                      <td>Carlos</td>
+                      <td class="subtle">Compra proveedor #FV-8821</td>
+                    </tr>
+                    <tr>
+                      <td>06 Oct 2026 · 13:05</td>
+                      <td><span class="pill red">SALIDA VENTA</span></td>
+                      <td>
+                        <b>Vestido Mini Riot</b>
+                        <div class="product-meta mono">4206021</div>
+                      </td>
+                      <td>Bello</td>
+                      <td class="qty">2</td>
+                      <td>Laura</td>
+                      <td class="subtle">Venta POS #004812</td>
+                    </tr>
+                    <tr>
+                      <td>06 Oct 2026 · 11:48</td>
+                      <td>
+                        <span class="pill amber">TRANSFERENCIA SALIDA</span>
+                      </td>
+                      <td>
+                        <b>Pantalón Cargo Kids</b>
+                        <div class="product-meta mono">5104087</div>
+                      </td>
+                      <td>CEDI Aburrá</td>
+                      <td class="qty">4</td>
+                      <td>Carlos</td>
+                      <td class="subtle">TRF-2026-0091 → Sabaneta</td>
+                    </tr>
+                    <tr>
+                      <td>05 Oct 2026 · 17:21</td>
+                      <td>
+                        <span class="pill red">AJUSTE CONTEO NEGATIVO</span>
+                      </td>
+                      <td>
+                        <b>Camisa Denim Baby</b>
+                        <div class="product-meta mono">4102034</div>
+                      </td>
+                      <td>Medellín Centro</td>
+                      <td class="qty">1</td>
+                      <td>Carlos</td>
+                      <td class="subtle">Diferencia de conteo físico</td>
+                    </tr>
+                    <tr>
+                      <td>05 Oct 2026 · 15:10</td>
+                      <td>
+                        <span class="pill green">DEVOLUCIÓN CLIENTE</span>
+                      </td>
+                      <td>
+                        <b>Buzo Unisex Noise</b>
+                        <div class="product-meta mono">3309012</div>
+                      </td>
+                      <td>Envigado</td>
+                      <td class="qty">1</td>
+                      <td>María</td>
+                      <td class="subtle">Devolución en buen estado</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="view" data-section="transfers">
+          <div class="toolbar">
+            <div>
+              <div class="eyebrow">Absolutely No Baby · Inventario</div>
+              <h1 class="page-title">Transferencias</h1>
+              <div class="subtle">
+                Solicita, aprueba, despacha y recibe mercancía entre tiendas.
+              </div>
+            </div>
+          </div>
+          <div class="toolbar">
+            <div class="filters">
+              <select class="select" id="transferStatusFilter">
+                <option value="">Todos los estados</option>
+                <option value="SOLICITADA">Solicitada</option>
+                <option value="EN TRANSITO">En tránsito</option>
+                <option value="RECIBIDA">Recibida</option>
+              </select>
+            </div>
+            <button class="btn btn-red" type="button" data-action="transfer">
+              <i class="fa-solid fa-plus" aria-hidden="true"></i>
+              Nueva transferencia
+            </button>
+          </div>
+          <div class="grid-2" id="transferCards">
+            <div class="card" data-transfer-status="EN TRANSITO">
+              <div class="card-head">
+                <div>
+                  <div class="card-title mono">TRF-2026-0091</div>
+                  <div class="product-meta">06 Oct 2026</div>
+                </div>
+                <span class="pill amber">EN TRANSITO</span>
+              </div>
+              <div class="card-body">
+                <div class="list-row">
+                  <div class="list-main">
+                    <strong>Origen</strong><small>CEDI Aburrá</small>
+                  </div>
+                  <b>→</b>
+                  <div class="list-main">
+                    <strong>Destino</strong><small>Sabaneta</small>
+                  </div>
+                </div>
+                <p class="subtle">Pantalón Cargo Kids · 4 unid.</p>
+                <div class="actions">
+                  <button
+                    class="btn"
+                    type="button"
+                    data-action="detail-transfer"
+                  >
+                    Ver detalle</button
+                  ><button
+                    class="btn btn-red"
+                    type="button"
+                    data-action="receive"
+                  >
+                    Recibir
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="card" data-transfer-status="SOLICITADA">
+              <div class="card-head">
+                <div>
+                  <div class="card-title mono">TRF-2026-0090</div>
+                  <div class="product-meta">06 Oct 2026</div>
+                </div>
+                <span class="pill amber">SOLICITADA</span>
+              </div>
+              <div class="card-body">
+                <div class="list-row">
+                  <div class="list-main">
+                    <strong>Origen</strong><small>Bello</small>
+                  </div>
+                  <b>→</b>
+                  <div class="list-main">
+                    <strong>Destino</strong><small>Medellín Centro</small>
+                  </div>
+                </div>
+                <p class="subtle">Vestido Mini Riot · 6 unid.</p>
+                <div class="actions">
+                  <button
+                    class="btn"
+                    type="button"
+                    data-action="detail-transfer"
+                  >
+                    Ver detalle</button
+                  ><button
+                    class="btn btn-red"
+                    type="button"
+                    data-action="approve"
+                  >
+                    Aprobar
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="card" data-transfer-status="RECIBIDA">
+              <div class="card-head">
+                <div>
+                  <div class="card-title mono">TRF-2026-0087</div>
+                  <div class="product-meta">04 Oct 2026</div>
+                </div>
+                <span class="pill green">RECIBIDA</span>
+              </div>
+              <div class="card-body">
+                <div class="list-row">
+                  <div class="list-main">
+                    <strong>Origen</strong><small>Medellín Centro</small>
+                  </div>
+                  <b>→</b>
+                  <div class="list-main">
+                    <strong>Destino</strong><small>Envigado</small>
+                  </div>
+                </div>
+                <p class="subtle">Camiseta Básica Rebel · 10 unid.</p>
+                <div class="actions">
+                  <button
+                    class="btn"
+                    type="button"
+                    data-action="detail-transfer"
+                  >
+                    Ver detalle
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="view" data-section="counts">
+          <div class="toolbar">
+            <div>
+              <div class="eyebrow">Absolutely No Baby · Inventario</div>
+              <h1 class="page-title">Conteo Físico</h1>
+              <div class="subtle">
+                Compara cantidades físicas contra el inventario del sistema y
+                registra diferencias auditadas.
+              </div>
+            </div>
+          </div>
+          <div class="toolbar">
+            <div class="filters">
+              <select class="select" id="countStatusFilter">
+                <option value="">Todos los conteos</option>
+                <option value="EN PROCESO">En proceso</option>
+                <option value="COMPLETADO">Completados</option>
+              </select>
+            </div>
+            <button class="btn btn-red" type="button" data-action="count">
+              <i class="fa-solid fa-plus" aria-hidden="true"></i>
+              Nuevo conteo
+            </button>
+          </div>
+          <div class="grid-2" id="countCards">
+            <div class="card" data-count-status="EN PROCESO">
+              <div class="card-head">
+                <div>
+                  <div class="card-title mono">CON-2026-004</div>
+                  <div class="product-meta">Medellín Centro · 06 Oct 2026</div>
+                </div>
+                <span class="pill amber">EN PROCESO</span>
+              </div>
+              <div class="card-body">
+                <div class="list-row">
+                  <div class="list-main">
+                    <strong>Auditor</strong><small>Carlos</small>
+                  </div>
+                  <b>78%</b>
+                </div>
+                <div class="progress"><span style="width: 78%"></span></div>
+                <div class="actions" style="margin-top: 12px">
+                  <button class="btn" type="button" data-action="open-count">
+                    Abrir conteo</button
+                  ><button
+                    class="btn btn-red"
+                    type="button"
+                    data-action="apply-count"
+                  >
+                    Aplicar ajuste
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="card" data-count-status="COMPLETADO">
+              <div class="card-head">
+                <div>
+                  <div class="card-title mono">CON-2026-003</div>
+                  <div class="product-meta">Bello · 05 Oct 2026</div>
+                </div>
+                <span class="pill green">COMPLETADO</span>
+              </div>
+              <div class="card-body">
+                <div class="list-row">
+                  <div class="list-main">
+                    <strong>Auditor</strong><small>Laura</small>
+                  </div>
+                  <b>100%</b>
+                </div>
+                <div class="progress"><span style="width: 100%"></span></div>
+                <div class="actions" style="margin-top: 12px">
+                  <button class="btn" type="button" data-action="open-count">
+                    Abrir conteo
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="view" data-section="alerts">
+          <div class="toolbar">
+            <div>
+              <div class="eyebrow">Absolutely No Baby · Inventario</div>
+              <h1 class="page-title">Alertas Stock</h1>
+              <div class="subtle">
+                Referencias que alcanzaron o están por debajo del mínimo
+                configurado.
+              </div>
+            </div>
+          </div>
+          <div class="stats">
+            <div class="stat">
+              <div class="stat-head">
+                <span>SKUs en alerta</span
+                ><span class="stat-icon"
+                  ><i class="fa-solid fa-triangle-exclamation"></i
+                ></span>
+              </div>
+              <div class="stat-value">2</div>
+              <div class="stat-foot">requieren atención</div>
+            </div>
+            <div class="stat">
+              <div class="stat-head">
+                <span>Unidades críticas</span
+                ><span class="stat-icon"
+                  ><i class="fa-solid fa-boxes-stacked" aria-hidden="true"></i
+                ></span>
+              </div>
+              <div class="stat-value">10</div>
+              <div class="stat-foot">stock actual</div>
+            </div>
+            <div class="stat">
+              <div class="stat-head">
+                <span>Tienda activa</span
+                ><span class="stat-icon"
+                  ><i class="fa-solid fa-store" aria-hidden="true"></i
+                ></span>
+              </div>
+              <div class="stat-value" style="font-size: 17px" data-store-name>
+                Medellín Centro
+              </div>
+              <div class="stat-foot" data-store-municipality>Medellín</div>
+            </div>
+          </div>
+          <div class="alert-card">
+            <div class="alert-left">
+              <div class="alert-icon">
+                <i
+                  class="fa-solid fa-triangle-exclamation"
+                  aria-hidden="true"
+                ></i>
+              </div>
+              <div>
+                <div>
+                  <span class="mono pill red">4206021</span>
+                  <b>Vestido Mini Riot</b>
+                </div>
+                <div class="subtle" style="margin-top: 5px">
+                  Talla: <b style="color: #ddd">2T · 3T · 4T</b> · Color:
+                  <b style="color: #ddd">Negro Profundo</b> · Halloween 2026
+                </div>
+                <div style="margin-top: 9px">
+                  <span class="status-dot red"></span>Stock
+                  <b style="color: #d94e45">6</b> / mínimo <b>8</b>
+                </div>
+              </div>
+            </div>
+            <div class="actions">
+              <button class="btn" type="button" data-action="transfer">
+                <i class="fa-solid fa-right-left" aria-hidden="true"></i>
+                Trasladar</button
+              ><button class="btn btn-red" type="button" data-action="movement">
+                <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                Entrada
+              </button>
+            </div>
+          </div>
+          <div class="alert-card">
+            <div class="alert-left">
+              <div class="alert-icon">
+                <i
+                  class="fa-solid fa-triangle-exclamation"
+                  aria-hidden="true"
+                ></i>
+              </div>
+              <div>
+                <div>
+                  <span class="mono pill red">4102034</span>
+                  <b>Camisa Denim Baby</b>
+                </div>
+                <div class="subtle" style="margin-top: 5px">
+                  Talla: <b style="color: #ddd">2T · 3T · 4T</b> · Color:
+                  <b style="color: #ddd">Azul Marino</b> · Básicos
+                </div>
+                <div style="margin-top: 9px">
+                  <span class="status-dot red"></span>Stock
+                  <b style="color: #d94e45">4</b> / mínimo <b>5</b>
+                </div>
+              </div>
+            </div>
+            <div class="actions">
+              <button class="btn" type="button" data-action="transfer">
+                ↔ Trasladar</button
+              ><button class="btn btn-red" type="button" data-action="movement">
+                ＋ Entrada
+              </button>
+            </div>
+          </div>
+        </section>
+      </main>
     </div>
 
     <div class="modal-backdrop hidden" id="modalBackdrop">
-        <div class="modal" id="modal"></div>
-    </div>
-    <script src="js/app.js"></script>
-</body>
+      <div class="modal" id="modal">
+        <div class="modal-content hidden" data-modal-content="new-product">
+          <div class="modal-head">
+            <h3 id="productModalTitle">Nueva Prenda · Código 8D</h3>
+            <button class="close" type="button" data-close aria-label="Cerrar">
+              ×
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="form-grid">
+              <div class="field">
+                <label for="grupo">Grupo (GG)</label>
+                <select
+                  class="select"
+                  id="grupo"
+                  name="grupo"
+                  style="width: 100%"
+                  required
+                >
+                  <option value="" disabled selected>
+                    Seleccione un grupo
+                  </option>
 
+                  <option
+                    th:each="grupo : ${grupos}"
+                    th:value="${grupo.codigoGrupo}"
+                    th:text="${grupo.codigoGrupo + ' · ' + grupo.nombre}"
+                  ></option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="tipoProducto">Tipo (TT)</label>
+                <select
+                  class="select"
+                  id="tipoProducto"
+                  name="tipoProducto"
+                  style="width: 100%"
+                  required
+                >
+                  <option value="" disabled selected>Seleccione un tipo</option>
+
+                  <option
+                    th:each="tipo : ${tipos}"
+                    th:value="${tipo.codigoTipoProducto}"
+                    th:text="${tipo.codigoTipoProducto + ' · ' + tipo.nombre}"
+                  ></option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="modelo">Modelo (MM)</label>
+                <select
+                  class="select"
+                  id="modelo"
+                  name="modelo"
+                  style="width: 100%"
+                  required
+                >
+                  <option value="" disabled selected>
+                    Seleccione una modelo
+                  </option>
+
+                  <option
+                    th:each="modelo : ${modelos}"
+                    th:value="${modelo.codigoModelo}"
+                    th:text="${modelo.codigoModelo + ' · ' + modelo.nombre}"
+                  ></option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="consecutivo">Consecutivo (CC)</label>
+                <input
+                  class="input"
+                  id="consecutivo"
+                  name="consecutivo"
+                  style="width: 100%"
+                  value="—"
+                  readonly
+                />
+              </div>
+
+              <div class="field">
+                <label for="nombreProducto">Nombre</label>
+                <input
+                  class="input"
+                  id="nombreProducto"
+                  name="nombre"
+                  style="width: 100%"
+                  placeholder="Nombre de la prenda"
+                  required
+                />
+              </div>
+
+              <div class="field">
+                <label for="precioProducto">Precio venta</label>
+                <input
+                  class="input"
+                  id="precioProducto"
+                  name="precio"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  style="width: 100%"
+                  placeholder="$ 0"
+                  required
+                />
+              </div>
+
+              <div class="field">
+                <label for="temporada">Temporada</label>
+                <select
+                  class="select"
+                  id="temporada"
+                  name="temporada"
+                  style="width: 100%"
+                >
+                  <option value="">Sin temporada</option>
+
+                  <option
+                    th:each="temporada : ${temporadas}"
+                    th:value="${temporada.idTemporada}"
+                    th:text="${temporada.nombre}"
+                  ></option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="stock">Stock inicial</label>
+                <input
+                  class="input"
+                  id="stock"
+                  name="stock"
+                  type="number"
+                  min="0"
+                  step="1"
+                  value="0"
+                  style="width: 100%"
+                  placeholder="Cantidad de unidades"
+                  required
+                />
+              </div>
+
+              <div class="field">
+                <label for="talla">Talla</label>
+                <select
+                  class="select"
+                  id="talla"
+                  name="talla"
+                  style="width: 100%"
+                  required
+                  disabled
+                >
+                  <option value="">Primero seleccione un modelo</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label id="colorLabel">Color</label>
+
+                <div class="color-picker" id="colorPicker">
+                  <button
+                    class="select color-picker-trigger"
+                    id="colorTrigger"
+                    type="button"
+                    aria-labelledby="colorLabel"
+                    aria-haspopup="listbox"
+                    aria-expanded="false"
+                  >
+                    <span class="color-picker-value" id="colorValue">
+                      <span class="color-dot"></span>
+                      <span>Seleccione un color</span>
+                    </span>
+                    <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+                  </button>
+
+                  <div
+                    class="color-picker-options hidden"
+                    id="colorOptions"
+                    role="listbox"
+                    aria-label="Colores disponibles"
+                  ></div>
+
+                  <input
+                    type="hidden"
+                    id="color"
+                    name="color"
+                    value=""
+                    required
+                  />
+                </div>
+              </div>
+
+              <div class="field full">
+                <label for="descripcionProducto">Descripción</label>
+                <textarea
+                  class="textarea"
+                  id="descripcionProducto"
+                  name="descripcion"
+                  placeholder="Descripción de la referencia"
+                ></textarea>
+              </div>
+            </div>
+
+            <div class="label-preview">
+              <b>Código generado</b>
+              <div class="barcode-lines" id="codigoPreview">————————</div>
+              <small>GG TT MM CC · generado por el sistema</small>
+            </div>
+          </div>
+          <div class="modal-foot">
+            <button class="btn" type="button" data-close>Cancelar</button
+            ><button class="btn btn-red" type="button" data-save-product>
+              Guardar prenda
+            </button>
+          </div>
+        </div>
+
+        <div class="modal-content hidden" data-modal-content="movement">
+          <div class="modal-head">
+            <h3>Registrar movimiento</h3>
+            <button class="close" type="button" data-close aria-label="Cerrar">
+              ×
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="form-grid">
+              <div class="field">
+                <label>Tipo</label
+                ><select class="select" style="width: 100%">
+                  <option>ENTRADA</option>
+                  <option>SALIDA_VENTA</option>
+                  <option>SALIDA_PERDIDA</option>
+                  <option>SALIDA_DEFECTO</option>
+                  <option>DEVOLUCION_CLIENTE</option>
+                  <option>DEVOLUCION_PROVEEDOR</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Código / Barcode</label
+                ><input class="input" style="width: 100%" value="3103015" />
+              </div>
+              <div class="field">
+                <label>Cantidad</label
+                ><input
+                  class="input"
+                  style="width: 100%"
+                  type="number"
+                  value="1"
+                  min="1"
+                />
+              </div>
+              <div class="field">
+                <label>Documento referencia</label
+                ><input
+                  class="input"
+                  style="width: 100%"
+                  placeholder="Factura, orden, etc."
+                />
+              </div>
+              <div class="field full">
+                <label>Motivo / observación</label
+                ><textarea
+                  class="textarea"
+                  placeholder="Describe la operación para mantener trazabilidad."
+                ></textarea>
+              </div>
+            </div>
+          </div>
+          <div class="modal-foot">
+            <button class="btn" type="button" data-close>Cancelar</button
+            ><button class="btn btn-red" type="button" data-save-movement>
+              Registrar movimiento
+            </button>
+          </div>
+        </div>
+
+        <div class="modal-content hidden" data-modal-content="transfer">
+          <div class="modal-head">
+            <h3>Nueva transferencia</h3>
+            <button class="close" type="button" data-close aria-label="Cerrar">
+              ×
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="form-grid">
+              <div class="field">
+                <label>Tienda origen</label
+                ><select class="select" style="width: 100%">
+                  <option>CEDI Aburrá</option>
+                  <option>Medellín Centro</option>
+                  <option>Bello</option>
+                  <option>Envigado</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Tienda destino</label
+                ><select class="select" style="width: 100%">
+                  <option>Sabaneta</option>
+                  <option>Bello</option>
+                  <option>Medellín Centro</option>
+                  <option>Envigado</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Producto / código</label
+                ><input class="input" style="width: 100%" value="5104087" />
+              </div>
+              <div class="field">
+                <label>Cantidad</label
+                ><input
+                  class="input"
+                  style="width: 100%"
+                  type="number"
+                  value="1"
+                  min="1"
+                />
+              </div>
+              <div class="field full">
+                <label>Observaciones</label
+                ><textarea
+                  class="textarea"
+                  placeholder="Motivo de la solicitud"
+                ></textarea>
+              </div>
+            </div>
+            <div class="pill amber">
+              La solicitud debe ser aprobada por la tienda origen antes de
+              descontar existencias.
+            </div>
+          </div>
+          <div class="modal-foot">
+            <button class="btn" type="button" data-close>Cancelar</button
+            ><button class="btn btn-red" type="button" data-save-transfer>
+              Solicitar transferencia
+            </button>
+          </div>
+        </div>
+
+        <div class="modal-content hidden" data-modal-content="barcode">
+          <div class="modal-head">
+            <h3>Lector de código de barras</h3>
+            <button class="close" type="button" data-close aria-label="Cerrar">
+              ×
+            </button>
+          </div>
+          <div class="modal-body">
+            <div style="text-align: center; padding: 15px">
+              <div
+                style="
+                  width: 210px;
+                  height: 210px;
+                  margin: auto;
+                  border: 1px dashed #444;
+                  border-radius: 18px;
+                  display: grid;
+                  place-items: center;
+                  background: #0b0b0b;
+                  font-size: 55px;
+                "
+              >
+                ▣
+              </div>
+              <p class="subtle">
+                Conecta una pistola USB o utiliza la cámara del dispositivo.
+              </p>
+              <input
+                class="input"
+                id="barcodeInput"
+                style="
+                  width: 100%;
+                  text-align: center;
+                  font-family: &quot;JetBrains Mono&quot;;
+                "
+                placeholder="Escanea o escribe el código…"
+                autocomplete="off"
+              />
+              <div
+                id="barcodeResult"
+                style="margin-top: 12px"
+                aria-live="polite"
+              ></div>
+            </div>
+          </div>
+          <div class="modal-foot">
+            <button class="btn" type="button" data-close>Cerrar</button>
+          </div>
+        </div>
+
+        <div class="modal-content hidden" data-modal-content="labels">
+          <div class="modal-head">
+            <h3>Impresión de etiquetas</h3>
+            <button class="close" type="button" data-close aria-label="Cerrar">
+              ×
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="form-grid">
+              <div class="field">
+                <label>Código</label
+                ><input class="input" style="width: 100%" value="3103015" />
+              </div>
+              <div class="field">
+                <label>Cantidad</label
+                ><input
+                  class="input"
+                  style="width: 100%"
+                  value="10"
+                  type="number"
+                  min="1"
+                />
+              </div>
+              <div class="field">
+                <label>Formato</label
+                ><select class="select" style="width: 100%">
+                  <option>Rollo térmico 58 mm</option>
+                  <option>Rollo térmico 80 mm</option>
+                  <option>Hoja adhesiva A4</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Precio</label
+                ><input class="input" style="width: 100%" value="69000" />
+              </div>
+            </div>
+            <div class="label-preview">
+              <b>ABSOLUTELY NO BABY</b>
+              <div class="barcode-lines">▌▌▌▌▌ 3103015 ▌▌▌▌▌</div>
+              <b>6-9M · ROJO · $ 69.000</b>
+            </div>
+          </div>
+          <div class="modal-foot">
+            <button class="btn" type="button" data-close>Cancelar</button
+            ><button class="btn btn-red" type="button" data-print>
+              Imprimir etiquetas
+            </button>
+          </div>
+        </div>
+
+        <div class="modal-content hidden" data-modal-content="detail-transfer">
+          <div class="modal-head">
+            <h3>Detalle de transferencia</h3>
+            <button class="close" type="button" data-close aria-label="Cerrar">
+              ×
+            </button>
+          </div>
+          <div class="modal-body">
+            <p>
+              Consulta el origen, destino, productos y estado de la
+              transferencia seleccionada.
+            </p>
+          </div>
+          <div class="modal-foot">
+            <button class="btn" type="button" data-close>Cerrar</button>
+          </div>
+        </div>
+
+        <div class="modal-content hidden" data-modal-content="count-detail">
+          <div class="modal-head">
+            <h3>Conteo físico</h3>
+            <button class="close" type="button" data-close aria-label="Cerrar">
+              ×
+            </button>
+          </div>
+          <div class="modal-body">
+            <p>Sesión de conteo físico seleccionada.</p>
+          </div>
+          <div class="modal-foot">
+            <button class="btn" type="button" data-close>Cerrar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <template id="toastTemplate"
+      ><div class="toast" role="status">
+        <strong data-toast-title></strong><span data-toast-message></span></div
+    ></template>
+    <script th:src="@{/js/theme.js}"></script>
+    <script th:src="@{/js/app.js}"></script>
+    <script th:src="@{/js/combo.js}"></script>
+    <script th:src="@{/js/consecutivo.js}"></script>
+    <script th:src="@{/js/talla.js}"></script>
+    <script th:src="@{/js/color.js}"></script>
+    <script th:src="@{/js/codigo.js}"></script>
+  </body>
 </html>

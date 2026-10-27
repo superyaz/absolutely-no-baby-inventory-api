@@ -1,96 +1,1107 @@
-const stores = [
-    { id: 'med', name: 'Medellín Centro', municipality: 'Medellín', cedi: false },
-    { id: 'bel', name: 'Bello', municipality: 'Bello', cedi: false },
-    { id: 'sab', name: 'Sabaneta', municipality: 'Sabaneta', cedi: false },
-    { id: 'env', name: 'Envigado', municipality: 'Envigado', cedi: false },
-    { id: 'iti', name: 'Itagüí', municipality: 'Itagüí', cedi: false },
-    { id: 'cedi', name: 'CEDI Aburrá', municipality: 'Medellín', cedi: true }
-];
-const products = [
-    { id: 1, code: '3103015', name: 'Camiseta Básica Rebel', group: 'Bebé masculino', type: 'Camiseta', season: 'Verano 2026', price: 69000, stock: 42, min: 8, sizes: '6-9M · 9-12M · 12-18M', color: 'Rojo Rebelde' },
-    { id: 2, code: '4206021', name: 'Vestido Mini Riot', group: 'Niña femenina', type: 'Vestido', season: 'Halloween 2026', price: 89000, stock: 6, min: 8, sizes: '2T · 3T · 4T', color: 'Negro Profundo' },
-    { id: 3, code: '5104087', name: 'Pantalón Cargo Kids', group: 'Niño grande masculino', type: 'Pantalón', season: 'Otoño 2026', price: 119000, stock: 18, min: 6, sizes: '10 · 12 · 14', color: 'Verde Militar' },
-    { id: 4, code: '3309012', name: 'Buzo Unisex Noise', group: 'Bebé unisex', type: 'Buzo', season: 'Otoño 2026', price: 99000, stock: 31, min: 7, sizes: '9-12M · 12-18M · 18-24M', color: 'Gris Oscuro' },
-    { id: 5, code: '4102034', name: 'Camisa Denim Baby', group: 'Niño masculino', type: 'Camisa', season: 'Básicos', price: 79000, stock: 4, min: 5, sizes: '2T · 3T · 4T', color: 'Azul Marino' }
-];
-const movements = [
-    { date: '06 Oct 2026 · 14:32', type: 'ENTRADA', product: 'Camiseta Básica Rebel', code: '3103015', qty: 24, store: 'Medellín Centro', user: 'Carlos', reason: 'Compra proveedor #FV-8821' },
-    { date: '06 Oct 2026 · 13:05', type: 'SALIDA_VENTA', product: 'Vestido Mini Riot', code: '4206021', qty: 2, store: 'Bello', user: 'Laura', reason: 'Venta POS #004812' },
-    { date: '06 Oct 2026 · 11:48', type: 'TRANSFERENCIA_SALIDA', product: 'Pantalón Cargo Kids', code: '5104087', qty: 4, store: 'CEDI Aburrá', user: 'Carlos', reason: 'TRF-2026-0091 → Sabaneta' },
-    { date: '05 Oct 2026 · 17:21', type: 'AJUSTE_CONTEO_NEGATIVO', product: 'Camisa Denim Baby', code: '4102034', qty: 1, store: 'Medellín Centro', user: 'Carlos', reason: 'Diferencia de conteo físico' },
-    { date: '05 Oct 2026 · 15:10', type: 'DEVOLUCION_CLIENTE', product: 'Buzo Unisex Noise', code: '3309012', qty: 1, store: 'Envigado', user: 'María', reason: 'Devolución en buen estado' }
-];
-const transfers = [
-    { code: 'TRF-2026-0091', from: 'CEDI Aburrá', to: 'Sabaneta', status: 'EN TRANSITO', items: 'Pantalón Cargo Kids · 4 unid.', date: '06 Oct 2026' },
-    { code: 'TRF-2026-0090', from: 'Bello', to: 'Medellín Centro', status: 'SOLICITADA', items: 'Vestido Mini Riot · 6 unid.', date: '06 Oct 2026' },
-    { code: 'TRF-2026-0087', from: 'Medellín Centro', to: 'Envigado', status: 'RECIBIDA', items: 'Camiseta Básica Rebel · 10 unid.', date: '04 Oct 2026' }
-];
-const counts = [
-    { code: 'CON-2026-004', store: 'Medellín Centro', status: 'EN PROCESO', progress: 78, user: 'Carlos', date: '06 Oct 2026' },
-    { code: 'CON-2026-003', store: 'Bello', status: 'COMPLETADO', progress: 100, user: 'Laura', date: '05 Oct 2026' }
-];
-const nav = [
-    ['dashboard', 'Dashboard'],
-    ['inventory', 'Inventario & Tallas'],
-    ['movements', 'Entradas & Salidas'],
-    ['transfers', 'Transferencias'],
-    ['counts', 'Conteo Físico'],
-    ['alerts', 'Alertas Stock']
-];
-let currentView = 'dashboard',
-    currentStore = stores[0];
-const main = document.getElementById('main');
+'use strict';
+
+const navTabs = document.getElementById('navTabs');
 const modalBackdrop = document.getElementById('modalBackdrop');
 const modal = document.getElementById('modal');
+const storeMenu = document.getElementById('storeMenu');
+const userMenu = document.getElementById('userMenu');
+const stores = {
+    med: { name: 'Medellín Centro', municipality: 'Medellín' },
+    bel: { name: 'Bello', municipality: 'Bello' },
+    sab: { name: 'Sabaneta', municipality: 'Sabaneta' },
+    env: { name: 'Envigado', municipality: 'Envigado' },
+    iti: { name: 'Itagüí', municipality: 'Itagüí' },
+    cedi: { name: 'CEDI Aburrá', municipality: 'Medellín' }
+};
 
-function money(n) { return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(n) }
+let currentStoreId = 'med';
 
-function statusClass(s) { if (['RECIBIDA', 'COMPLETADO'].includes(s)) return 'green'; if (['SOLICITADA', 'EN PROCESO'].includes(s)) return 'amber'; return 'red' }
+const tallasPorModelo = {
+    "01": ["RN", "0M", "0-3M"],
+    "02": ["3M", "3-6M", "6M"],
+    "03": ["6M", "6-9M", "9M"],
+    "04": ["9M", "9-12M", "12M"]
+};
 
-function renderNav() { document.getElementById('navTabs').innerHTML = nav.map(([id, label]) => `<button class="nav-tab ${currentView === id ? 'active' : ''}" data-view="${id}">${label}${id === 'transfers' ? '<span class="badge">2</span>' : ''}${id === 'alerts' ? '<span class="badge red">3</span>' : ''}</button>`).join('') }
 
-function layout(title, sub, content) { return `<section class="view active"><div class="toolbar"><div><div class="eyebrow">Absolutely No Baby · Inventario</div><h1 class="page-title">${title}</h1><div class="subtle">${sub}</div></div></div>${content}</section>` }
+function inicializarFiltrosPremium() {
+    const ids = ['sizeFilter', 'groupFilter', 'typeFilter'];
 
-function dashboard() {
-    return `<section class="view active">
-<div class="hero"><span class="pill red">PUNTO ACTIVO · ${currentStore.name}</span><h1>Control de inventario.<br><span style="color:#ef4444">Sin perder el ritmo.</span></h1><p>Centraliza existencias, movimientos y transferencias entre los puntos de venta del Valle de Aburrá. Todo movimiento queda trazado por usuario, tienda y producto.</p><div class="hero-actions"><button class="btn btn-red" data-action="barcode">▣ Escanear producto</button><button class="btn" data-action="new">＋ Nueva prenda (7D)</button><button class="btn" data-view="transfers">↔ Gestionar transferencias</button><button class="btn" data-view="alerts">⚠ Ver alertas</button></div></div>
-<div class="stats">
-${stat('Existencias actuales', '101', 'unids.', '▣', '+8.4% vs. mes anterior')}${stat('Valor inventario', money(12480000), 'COP', '◈', 'Costo estimado')}${stat('Alertas de stock', '3', 'SKUs', '⚠', 'Requieren atención', true)}${stat('Transferencias pendientes', '2', 'activas', '↔', '1 en tránsito')}
-</div>
-<div class="grid-2"><div class="card"><div class="card-head"><div class="card-title">Movimientos recientes</div><button class="btn" data-view="movements">Ver historial</button></div><div class="card-body">${movementList(movements.slice(0, 4))}</div></div><div class="card"><div class="card-head"><div class="card-title">Acciones rápidas</div></div><div class="card-body"><div class="quick-grid"><button class="quick" data-view="inventory"><strong>▦ Consultar inventario</strong><span>Por tienda, talla, color y referencia.</span></button><button class="quick" data-action="new"><strong>＋ Crear producto</strong><span>Generar código único de 7 dígitos.</span></button><button class="quick" data-action="barcode"><strong>▣ Leer barcode</strong><span>Buscar rápidamente una referencia.</span></button><button class="quick" data-view="counts"><strong>☑ Conteo físico</strong><span>Conciliar físico contra sistema.</span></button></div></div></div></div>
-</section>`
+    ids.forEach(id => {
+        const select = document.getElementById(id);
+
+        if (!select || select.dataset.premiumReady === 'true') {
+            return;
+        }
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'inventory-premium-select';
+
+        select.parentNode.insertBefore(wrapper, select);
+        wrapper.appendChild(select);
+
+        select.classList.add('inventory-premium-native');
+        select.dataset.premiumReady = 'true';
+
+        const trigger = document.createElement('button');
+        trigger.type = 'button';
+        trigger.className = 'inventory-premium-trigger';
+        trigger.setAttribute('aria-haspopup', 'listbox');
+        trigger.setAttribute('aria-expanded', 'false');
+
+        const value = document.createElement('span');
+        value.className = 'inventory-premium-value';
+
+        const arrow = document.createElement('span');
+        arrow.className = 'inventory-premium-arrow';
+        arrow.innerHTML = '<i class="fa-solid fa-chevron-down"></i>';
+
+        trigger.append(value, arrow);
+
+        const menu = document.createElement('div');
+        menu.className = 'inventory-premium-menu';
+        menu.setAttribute('role', 'listbox');
+
+        wrapper.append(trigger, menu);
+
+        function actualizarOpciones() {
+            const valorActual = select.value;
+
+            value.textContent =
+                select.selectedOptions[0]?.textContent || 'Seleccionar';
+
+            menu.replaceChildren();
+
+            Array.from(select.options).forEach(option => {
+                const item = document.createElement('button');
+                item.type = 'button';
+                item.className = 'inventory-premium-option';
+                item.setAttribute('role', 'option');
+                item.setAttribute(
+                    'aria-selected',
+                    String(option.value === valorActual)
+                );
+
+                const label = document.createElement('span');
+                label.textContent = option.textContent;
+
+                const check = document.createElement('span');
+                check.className = 'inventory-premium-check';
+                check.textContent = '✓';
+
+                item.append(label, check);
+
+                if (option.value === valorActual) {
+                    item.classList.add('selected');
+                }
+
+                item.addEventListener('click', () => {
+                    select.value = option.value;
+
+
+                    select.dispatchEvent(
+                        new Event('change', { bubbles: true })
+                    );
+
+                    actualizarOpciones();
+                    cerrarMenu();
+                });
+
+                menu.appendChild(item);
+            });
+
+            if (!select.options.length) {
+                const empty = document.createElement('div');
+                empty.className = 'inventory-premium-empty';
+                empty.textContent = 'No hay opciones disponibles';
+                menu.appendChild(empty);
+            }
+        }
+
+        function abrirMenu() {
+            document.querySelectorAll(
+                '.inventory-premium-select.open'
+            ).forEach(otro => {
+                if (otro !== wrapper) {
+                    otro.classList.remove('open');
+                    otro.querySelector('.inventory-premium-trigger')
+                        ?.setAttribute('aria-expanded', 'false');
+                }
+            });
+
+            actualizarOpciones();
+            wrapper.classList.add('open');
+            trigger.setAttribute('aria-expanded', 'true');
+        }
+
+        function cerrarMenu() {
+            wrapper.classList.remove('open');
+            trigger.setAttribute('aria-expanded', 'false');
+        }
+
+        trigger.addEventListener('click', () => {
+            wrapper.classList.contains('open')
+                ? cerrarMenu()
+                : abrirMenu();
+        });
+
+        select.addEventListener('change', actualizarOpciones);
+
+
+        const observer = new MutationObserver(actualizarOpciones);
+        observer.observe(select, {
+            childList: true,
+            subtree: true
+        });
+
+        actualizarOpciones();
+    });
+
+
+    if (!document.documentElement.dataset.premiumFiltersReady) {
+        document.addEventListener('click', event => {
+            if (!event.target.closest('.inventory-premium-select')) {
+                document.querySelectorAll(
+                    '.inventory-premium-select.open'
+                ).forEach(wrapper => {
+                    wrapper.classList.remove('open');
+                    wrapper.querySelector('.inventory-premium-trigger')
+                        ?.setAttribute('aria-expanded', 'false');
+                });
+            }
+        });
+
+        document.documentElement.dataset.premiumFiltersReady = 'true';
+    }
 }
 
-function stat(label, value, unit, icon, foot, alert = false) { return `<div class="stat"><div class="stat-head"><span>${label}</span><span class="stat-icon" style="color:${alert ? '#f59e0b' : ''}">${icon}</span></div><div class="stat-value">${value}</div><div class="stat-foot">${unit} · ${foot}</div></div>` }
+function obtenerTallasCatalogo() {
+    return [...new Set(
+        Object.values(tallasPorModelo).flat()
+    )];
+}
 
-function movementList(items) { return `<div class="list">${items.map(m => `<div class="list-row"><div class="list-main"><strong>${m.product}</strong><small><span class="mono">${m.code}</span> · ${m.store} · ${m.date}</small></div><div class="value-right"><span class="pill ${m.type.startsWith('SALIDA') || m.type.includes('NEGATIVO') ? 'red' : 'green'}">${m.type.replaceAll('_', ' ')}</span><br><span style="color:#eee">${m.qty} unid.</span></div></div>`).join('')}</div>` }
-function inventory() { return layout('Inventario & Tallas', 'Existencias independientes por tienda, referencia, talla y color.', `<div class="card"><div class="card-body"><div class="toolbar"><div class="filters"><input class="input" id="inventorySearch" placeholder="Buscar código, nombre o color…"><select class="select"><option>Todas las tallas</option><option>0-3M</option><option>6-9M</option><option>2T</option><option>10</option><option>12</option></select><select class="select"><option>Todos los grupos</option><option>Bebé masculino</option><option>Niña femenina</option><option>Niño grande masculino</option></select></div><button class="btn btn-red" data-action="new">＋ Nueva prenda</button></div><div class="table-wrap"><table class="table"><thead><tr><th>Referencia</th><th>Producto</th><th>Talla / color</th><th>Stock</th><th>Mín.</th><th>Temporada</th><th></th></tr></thead><tbody id="inventoryRows">${productRows(products)}</tbody></table></div></div></div>`) }
-function productRows(list) { return list.map(p => `<tr><td class="mono">${p.code}</td><td><div class="product-name">${p.name}</div><div class="product-meta">${p.group} · ${p.type}</div></td><td>${p.sizes}<div class="product-meta">${p.color}</div></td><td><span class="qty ${p.stock <= p.min ? 'low' : 'good'}">${p.stock}</span></td><td class="mono">${p.min}</td><td>${p.season}</td><td><div class="actions"><button class="icon-btn" data-action="edit" data-id="${p.id}">✎</button><button class="icon-btn" data-action="label" data-id="${p.id}">▤</button></div></td></tr>`).join('') }
-function movementsView() { return layout('Entradas & Salidas', 'Historial auditable de operaciones de inventario.', `<div class="card"><div class="card-body"><div class="toolbar"><div class="filters"><input class="input" placeholder="Buscar producto, SKU o documento…"><select class="select"><option>Todos los movimientos</option><option>Entradas</option><option>Salidas</option><option>Ajustes</option><option>Devoluciones</option></select><select class="select"><option>Últimos 30 días</option><option>Hoy</option><option>Esta semana</option></select></div><button class="btn btn-red" data-action="movement">＋ Registrar movimiento</button></div><div class="table-wrap"><table class="table"><thead><tr><th>Fecha</th><th>Movimiento</th><th>Producto</th><th>Tienda</th><th>Cantidad</th><th>Usuario</th><th>Motivo</th></tr></thead><tbody>${movements.map(m => `<tr><td>${m.date}</td><td><span class="pill ${m.type.startsWith('SALIDA') || m.type.includes('NEGATIVO') ? 'red' : m.type.includes('TRANSFERENCIA') ? 'amber' : 'green'}">${m.type.replaceAll('_', ' ')}</span></td><td><b>${m.product}</b><div class="product-meta mono">${m.code}</div></td><td>${m.store}</td><td class="qty">${m.qty}</td><td>${m.user}</td><td class="subtle">${m.reason}</td></tr>`).join('')}</tbody></table></div></div></div>`) }
-function transfersView() { return layout('Transferencias', 'Solicita, aprueba, despacha y recibe mercancía entre tiendas.', `<div class="toolbar"><div class="filters"><select class="select"><option>Todos los estados</option><option>Solicitada</option><option>En tránsito</option><option>Recibida</option></select></div><button class="btn btn-red" data-action="transfer">＋ Nueva transferencia</button></div><div class="grid-2">${transfers.map(t => `<div class="card"><div class="card-head"><div><div class="card-title mono">${t.code}</div><div class="product-meta">${t.date}</div></div><span class="pill ${statusClass(t.status)}">${t.status}</span></div><div class="card-body"><div class="list-row"><div class="list-main"><strong>Origen</strong><small>${t.from}</small></div><b>→</b><div class="list-main"><strong>Destino</strong><small>${t.to}</small></div></div><p class="subtle">${t.items}</p><div class="actions"><button class="btn">Ver detalle</button>${t.status === 'SOLICITADA' ? '<button class="btn btn-red" data-action="approve">Aprobar</button>' : ''}${t.status === 'EN TRANSITO' ? '<button class="btn btn-red" data-action="receive">Recibir</button>' : ''}</div></div></div>`).join('')}</div>`) }
-function countsView() { return layout('Conteo Físico', 'Compara cantidades físicas contra el inventario del sistema y registra diferencias auditadas.', `<div class="toolbar"><div class="filters"><select class="select"><option>Todos los conteos</option><option>En proceso</option><option>Completados</option></select></div><button class="btn btn-red" data-action="count">＋ Nuevo conteo</button></div><div class="grid-2">${counts.map(c => `<div class="card"><div class="card-head"><div><div class="card-title mono">${c.code}</div><div class="product-meta">${c.store} · ${c.date}</div></div><span class="pill ${statusClass(c.status)}">${c.status}</span></div><div class="card-body"><div class="list-row"><div class="list-main"><strong>Auditor</strong><small>${c.user}</small></div><b>${c.progress}%</b></div><div class="progress"><span style="width:${c.progress}%"></span></div><div class="actions" style="margin-top:12px"><button class="btn">Abrir conteo</button>${c.status === 'EN PROCESO' ? '<button class="btn btn-red">Aplicar ajuste</button>' : ''}</div></div></div>`).join('')}</div>`) }
-function alertsView() { const low = products.filter(p => p.stock <= p.min); return layout('Alertas Stock', 'Referencias que alcanzaron o están por debajo del mínimo configurado.', `<div class="stats"><div class="stat"><div class="stat-head"><span>SKUs en alerta</span><span class="stat-icon">⚠</span></div><div class="stat-value">${low.length}</div><div class="stat-foot">requieren atención</div></div><div class="stat"><div class="stat-head"><span>Unidades críticas</span><span class="stat-icon">▣</span></div><div class="stat-value">${low.reduce((a, p) => a + p.stock, 0)}</div><div class="stat-foot">stock actual</div></div><div class="stat"><div class="stat-head"><span>Tienda activa</span><span class="stat-icon">⌂</span></div><div class="stat-value" style="font-size:17px">${currentStore.name}</div><div class="stat-foot">${currentStore.municipality}</div></div></div>${low.map(p => `<div class="alert-card"><div class="alert-left"><div class="alert-icon">⚠</div><div><div><span class="mono pill red">${p.code}</span> <b>${p.name}</b></div><div class="subtle" style="margin-top:5px">Talla: <b style="color:#ddd">${p.sizes}</b> · Color: <b style="color:#ddd">${p.color}</b> · ${p.season}</div><div style="margin-top:9px"><span class="status-dot red"></span>Stock <b style="color:#f87171">${p.stock}</b> / mínimo <b>${p.min}</b></div></div></div><div class="actions"><button class="btn" data-action="transfer">↔ Trasladar</button><button class="btn btn-red" data-action="movement">＋ Entrada</button></div></div>`).join('')}`) }
-function render() { renderNav(); main.innerHTML = { dashboard, inventory, movements: movementsView, transfers: transfersView, counts: countsView, alerts: alertsView }[currentView](); bindDynamic(); document.getElementById('currentStore').textContent = currentStore.name }
-function openModal(title, body, footer = `<button class="btn" data-close>Cerrar</button>`) { modal.innerHTML = `<div class="modal-head"><h3>${title}</h3><button class="close" data-close>×</button></div><div class="modal-body">${body}</div><div class="modal-foot">${footer}</div>`; modalBackdrop.classList.remove('hidden') }
-function closeModal() { modalBackdrop.classList.add('hidden') }
-function newProduct() { openModal('Nueva Prenda · Código 7D', `<div class="form-grid"><div class="field"><label>Grupo (GG)</label><select class="select" style="width:100%"><option>31 · Bebé masculino</option><option>32 · Bebé femenina</option><option>33 · Bebé unisex</option><option>41 · Niño masculino</option><option>42 · Niña femenina</option><option>51 · Niño grande masculino</option><option>52 · Niña grande femenina</option></select></div><div class="field"><label>Tipo (TT)</label><select class="select" style="width:100%"><option>03 · Camiseta</option><option>01 · Body</option><option>04 · Pantalón</option><option>06 · Vestido</option><option>09 · Buzo</option></select></div><div class="field"><label>Modelo (MM)</label><input class="input" style="width:100%" value="01"></div><div class="field"><label>Consecutivo (C)</label><input class="input" style="width:100%" value="5"></div><div class="field"><label>Nombre</label><input class="input" style="width:100%" placeholder="Nombre de la prenda"></div><div class="field"><label>Precio venta</label><input class="input" style="width:100%" placeholder="$ 0"></div><div class="field"><label>Tallas</label><input class="input" style="width:100%" placeholder="0-3M, 3-6M, 6-9M…"></div><div class="field"><label>Colores</label><input class="input" style="width:100%" placeholder="Negro, Blanco, Rojo…"></div><div class="field full"><label>Descripción</label><textarea class="textarea" placeholder="Descripción de la referencia"></textarea></div></div><div class="label-preview"><b>Código generado</b><div class="barcode-lines">3103015</div><small>GG TT MM C · único en el sistema</small></div>`, `<button class="btn" data-close>Cancelar</button><button class="btn btn-red" data-save-product>Guardar prenda</button>`) }
-function movementModal() { openModal('Registrar movimiento', `<div class="form-grid"><div class="field"><label>Tipo</label><select class="select" style="width:100%"><option>ENTRADA</option><option>SALIDA_VENTA</option><option>SALIDA_PERDIDA</option><option>SALIDA_DEFECTO</option><option>DEVOLUCION_CLIENTE</option><option>DEVOLUCION_PROVEEDOR</option></select></div><div class="field"><label>Código / Barcode</label><input class="input" style="width:100%" value="3103015"></div><div class="field"><label>Cantidad</label><input class="input" style="width:100%" type="number" value="1" min="1"></div><div class="field"><label>Documento referencia</label><input class="input" style="width:100%" placeholder="Factura, orden, etc."></div><div class="field full"><label>Motivo / observación</label><textarea class="textarea" placeholder="Describe la operación para mantener trazabilidad."></textarea></div></div>`, `<button class="btn" data-close>Cancelar</button><button class="btn btn-red" data-save-movement>Registrar movimiento</button>`) }
-function transferModal() { openModal('Nueva transferencia', `<div class="form-grid"><div class="field"><label>Tienda origen</label><select class="select" style="width:100%"><option>CEDI Aburrá</option><option>Medellín Centro</option><option>Bello</option><option>Envigado</option></select></div><div class="field"><label>Tienda destino</label><select class="select" style="width:100%"><option>Sabaneta</option><option>Bello</option><option>Medellín Centro</option><option>Envigado</option></select></div><div class="field"><label>Producto / código</label><input class="input" style="width:100%" value="5104087"></div><div class="field"><label>Cantidad</label><input class="input" style="width:100%" type="number" value="1" min="1"></div><div class="field full"><label>Observaciones</label><textarea class="textarea" placeholder="Motivo de la solicitud"></textarea></div></div><div class="pill amber">La solicitud debe ser aprobada por la tienda origen antes de descontar existencias.</div>`, `<button class="btn" data-close>Cancelar</button><button class="btn btn-red" data-save-transfer>Solicitar transferencia</button>`) }
-function barcodeModal() { openModal('Lector de código de barras', `<div style="text-align:center;padding:15px"><div style="width:210px;height:210px;margin:auto;border:1px dashed #444;border-radius:18px;display:grid;place-items:center;background:#0b0b0b;font-size:55px">▣</div><p class="subtle">Conecta una pistola USB o utiliza la cámara del dispositivo.</p><input class="input" id="barcodeInput" style="width:100%;text-align:center;font-family:'JetBrains Mono'" placeholder="Escanea o escribe el código…" autofocus><div id="barcodeResult" style="margin-top:12px"></div></div>`) }
-function labelsModal() { openModal('Impresión de etiquetas', `<div class="form-grid"><div class="field"><label>Código</label><input class="input" style="width:100%" value="3103015"></div><div class="field"><label>Cantidad</label><input class="input" style="width:100%" value="10" type="number"></div><div class="field"><label>Formato</label><select class="select" style="width:100%"><option>Rollo térmico 58 mm</option><option>Rollo térmico 80 mm</option><option>Hoja adhesiva A4</option></select></div><div class="field"><label>Precio</label><input class="input" style="width:100%" value="69000"></div></div><div class="label-preview"><b>ABSOLUTELY NO BABY</b><div class="barcode-lines">▌▌▌▌▌ 3103015 ▌▌▌▌▌</div><b>6-9M · ROJO · ${money(69000)}</b></div>`, `<button class="btn" data-close>Cancelar</button><button class="btn btn-red" data-print>Imprimir etiquetas</button>`) }
-function architecture() { openModal('Arquitectura & CI/CD', `<div class="list"><div class="list-row"><div class="list-main"><strong>Frontend</strong><small>HTML + CSS + JavaScript · interfaz desacoplada del backend</small></div><span class="pill green">LISTO</span></div><div class="list-row"><div class="list-main"><strong>Backend</strong><small>API REST · autenticación · reglas de negocio · persistencia</small></div><span class="pill amber">POR CONECTAR</span></div><div class="list-row"><div class="list-main"><strong>Base de datos</strong><small>Tiendas · productos · variantes · inventarios · movimientos · transferencias · auditoría</small></div><span class="pill amber">DISEÑADA</span></div><div class="list-row"><div class="list-main"><strong>Despliegue</strong><small>CI/CD + backup + recuperación + ambientes</small></div><span class="pill blue">DEFINIR</span></div></div>`) }
-function bindDynamic() { document.querySelectorAll('[data-view]').forEach(el => el.onclick = () => { currentView = el.dataset.view; render() }); document.querySelectorAll('[data-action]').forEach(el => el.onclick = () => action(el.dataset.action, el.dataset.id)); document.querySelectorAll('[data-close]').forEach(el => el.onclick = closeModal) }
-function action(a, id) { if (a === 'new' || a === 'edit') newProduct(); if (a === 'movement') movementModal(); if (a === 'transfer') transferModal(); if (a === 'barcode') barcodeModal(); if (a === 'label') labelsModal(); if (a === 'count') toast('Conteo físico', 'Se abrirá una nueva sesión de conteo.'); if (a === 'approve') toast('Transferencia aprobada', 'La solicitud queda lista para despacho.'); if (a === 'receive') toast('Transferencia recibida', 'La entrada se registra en la tienda destino.'); }
-function toast(title, msg) { const t = document.createElement('div'); t.className = 'toast'; t.innerHTML = `<strong>${title}</strong><span>${msg}</span>`; document.body.appendChild(t); setTimeout(() => t.remove(), 3000) }
+async function cargarOpcionesCatalogo(url, selectId, textoInicial, campoNombre) {
+    const select = document.getElementById(selectId);
+    if (!select) return;
 
-document.getElementById('navTabs').addEventListener('click', e => { const b = e.target.closest('[data-view]'); if (b) { currentView = b.dataset.view; render() } });
-document.getElementById('newProductBtn').onclick = newProduct; document.getElementById('barcodeBtn').onclick = barcodeModal; document.getElementById('labelsBtn').onclick = labelsModal; document.getElementById('architectureBtn').onclick = architecture;
-document.getElementById('storeBtn').onclick = () => document.getElementById('storeMenu').classList.toggle('open');
-document.getElementById('userBtn').onclick = () => document.getElementById('userMenu').classList.toggle('open');
-document.getElementById('storeMenu').innerHTML = '<div class="drop-title">Puntos de venta · Valle de Aburrá</div>' + stores.map(s => `<button class="drop-item ${s.id === currentStore.id ? 'active' : ''}" data-store="${s.id}"><span><b>${s.name}</b><small>${s.municipality}</small></span>${s.cedi ? '<span class="drop-tag">CEDI</span>' : ''}</button>`).join('');
-document.getElementById('userMenu').innerHTML = '<div class="drop-title">Usuario activo</div><button class="drop-item active"><span><b>Carlos</b><small>carlos@absolutelynobaby.com</small></span><span class="drop-tag">ADMIN</span></button><button class="drop-item"><span><b>Laura</b><small>Admin Tienda · Bello</small></span></button><button class="drop-item"><span><b>María</b><small>Operativo / POS · Envigado</small></span></button>';
-document.getElementById('storeMenu').addEventListener('click', e => { const b = e.target.closest('[data-store]'); if (!b) return; currentStore = stores.find(s => s.id === b.dataset.store); document.getElementById('storeMenu').classList.remove('open'); render(); toast('Punto de venta cambiado', currentStore.name) });
-window.addEventListener('click', e => { if (!e.target.closest('.dropdown-wrap')) document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('open')) });
-modalBackdrop.addEventListener('click', e => { if (e.target === modalBackdrop) closeModal() });
-modal.addEventListener('click', e => { if (e.target.matches('[data-save-product]')) { closeModal(); toast('Prenda guardada', 'El código 3103015 quedó reservado correctamente.') } if (e.target.matches('[data-save-movement]')) { closeModal(); toast('Movimiento registrado', 'La existencia fue actualizada y auditada.') } if (e.target.matches('[data-save-transfer]')) { closeModal(); toast('Transferencia solicitada', 'Se creó la solicitud pendiente de aprobación.') } if (e.target.matches('[data-print]')) { closeModal(); window.print() } });
-render();
+    try {
+        const respuesta = await fetch(url);
+
+        if (!respuesta.ok) {
+            throw new Error(`Error consultando ${url}`);
+        }
+
+        const registros = await respuesta.json();
+
+        select.replaceChildren(new Option(textoInicial, ""));
+
+        registros.forEach(registro => {
+            const nombre = registro[campoNombre];
+
+            if (nombre) {
+                select.add(new Option(nombre, nombre));
+            }
+        });
+    } catch (error) {
+        console.error(`No se pudo cargar el catálogo ${selectId}:`, error);
+    }
+}
+
+function cargarFiltroTallas() {
+    const select = document.getElementById("sizeFilter");
+    if (!select) return;
+
+    select.replaceChildren(new Option("Todas las tallas", ""));
+
+    obtenerTallasCatalogo().forEach(talla => {
+        select.add(new Option(talla, talla));
+    });
+}
+
+async function cargarFiltrosInventario() {
+    cargarFiltroTallas();
+
+    await Promise.all([
+        cargarOpcionesCatalogo(
+            "/api/productos/grupos",
+            "groupFilter",
+            "Todos los grupos",
+            "nombre"
+        ),
+        cargarOpcionesCatalogo(
+            "/api/productos/tipos",
+            "typeFilter",
+            "Todos los tipos",
+            "nombre"
+        )
+    ]);
+}
+
+function setView(viewName) {
+    const target = document.querySelector(`[data-section="${viewName}"]`);
+    if (!target) return;
+
+    document.querySelectorAll('[data-section]').forEach((section) => {
+        section.classList.toggle('active', section.dataset.section === viewName);
+    });
+
+    document.querySelectorAll('.nav-tab[data-view]').forEach((tab) => {
+        tab.classList.toggle('active', tab.dataset.view === viewName);
+    });
+
+    navTabs.classList.remove('open');
+    document.getElementById('mobileBtn').setAttribute('aria-expanded', 'false');
+}
+
+function openModal(name) {
+    const content = modal.querySelectorAll('[data-modal-content]');
+    content.forEach((panel) => {
+        panel.classList.toggle('hidden', panel.dataset.modalContent !== name);
+    });
+    modalBackdrop.classList.remove('hidden');
+    document.getElementById('storeMenu').classList.remove('open');
+    document.getElementById('userMenu').classList.remove('open');
+
+    if (name === 'barcode') {
+        const input = document.getElementById('barcodeInput');
+        input.value = '';
+        document.getElementById('barcodeResult').textContent = '';
+        window.setTimeout(() => input.focus(), 0);
+    }
+}
+
+function closeModal() {
+    modalBackdrop.classList.add('hidden');
+    modal.querySelectorAll('[data-modal-content]').forEach((panel) => panel.classList.add('hidden'));
+}
+
+function showToast(title, message) {
+    const template = document.getElementById('toastTemplate');
+    const toast = template.content.firstElementChild.cloneNode(true);
+    toast.querySelector('[data-toast-title]').textContent = title;
+    toast.querySelector('[data-toast-message]').textContent = message;
+    document.body.appendChild(toast);
+    window.setTimeout(() => toast.remove(), 3000);
+}
+
+function toggleDropdown(menu, button) {
+    const shouldOpen = !menu.classList.contains('open');
+    document.querySelectorAll('.dropdown').forEach((dropdown) => dropdown.classList.remove('open'));
+    document.querySelectorAll('.selector').forEach((selector) => selector.setAttribute('aria-expanded', 'false'));
+    if (shouldOpen) {
+        menu.classList.add('open');
+        button.setAttribute('aria-expanded', 'true');
+    }
+}
+
+function selectStore(storeId) {
+    const store = stores[storeId];
+    if (!store) return;
+    currentStoreId = storeId;
+    document.getElementById('currentStore').textContent = store.name;
+    document.querySelectorAll('[data-store-name]').forEach((element) => {
+        element.textContent = store.name;
+    });
+    document.querySelectorAll('[data-store-municipality]').forEach((element) => {
+        element.textContent = store.municipality;
+    });
+    storeMenu.querySelectorAll('[data-store]').forEach((button) => {
+        button.classList.toggle('active', button.dataset.store === storeId);
+    });
+    storeMenu.classList.remove('open');
+    document.getElementById('storeBtn').setAttribute('aria-expanded', 'false');
+    showToast('Punto de venta cambiado', store.name);
+}
+
+function handleAction(action, id) {
+    switch (action) {
+        case 'new':
+            productoEnEdicion = null;
+            prepararModalNuevaPrenda();
+            openModal('new-product');
+            break;
+
+        case 'edit':
+            editarPrenda(id);
+            break;
+
+        case 'delete':
+            eliminarPrenda(id);
+            break;
+
+        case 'movement':
+            openModal('movement');
+            break;
+
+        case 'transfer':
+            openModal('transfer');
+            break;
+
+        case 'barcode':
+            openModal('barcode');
+            break;
+
+        case 'label':
+            openModal('labels');
+            break;
+
+        case 'detail-transfer':
+            openModal('detail-transfer');
+            break;
+
+        case 'count':
+            showToast('Conteo físico', 'Se abrirá una nueva sesión de conteo.');
+            break;
+
+        case 'open-count':
+            openModal('count-detail');
+            break;
+
+        case 'apply-count':
+            showToast('Conteo físico', 'El ajuste está listo para revisión.');
+            break;
+
+        case 'approve':
+            showToast('Transferencia aprobada', 'La solicitud queda lista para despacho.');
+            break;
+
+        case 'receive':
+            showToast('Transferencia recibida', 'La entrada se registra en la tienda destino.');
+            break;
+
+        default:
+            break;
+    }
+}
+
+
+function prepararModalNuevaPrenda() {
+    const formulario = document.querySelector(
+        '[data-modal-content="new-product"]'
+    );
+
+    if (!formulario) return;
+
+    productoEnEdicion = null;
+    window.productoEnEdicion = null;
+
+    formulario.querySelectorAll('input, textarea').forEach(campo => {
+        if (campo.id === 'stock') {
+            campo.value = '0';
+        } else if (campo.id === 'consecutivo') {
+            campo.value = '—';
+        } else {
+            campo.value = '';
+        }
+    });
+
+    formulario.querySelectorAll('select').forEach(campo => {
+        campo.selectedIndex = 0;
+    });
+
+    const talla = document.getElementById('talla');
+    if (talla) {
+        talla.replaceChildren(
+            new Option('Primero seleccione un modelo', '')
+        );
+        talla.disabled = true;
+    }
+
+    if (typeof window.establecerColorProducto === 'function') {
+        window.establecerColorProducto('');
+    } else {
+        const color = document.getElementById('color');
+        if (color) color.value = '';
+    }
+
+    const colorValue = document.getElementById('colorValue');
+
+    if (colorValue) {
+        colorValue.innerHTML =
+            '<span class="color-dot"></span><span>Seleccione un color</span>';
+    }
+
+    document.getElementById('codigoPreview')?.replaceChildren('————————');
+
+    const titulo = document.getElementById('productModalTitle');
+    if (titulo) titulo.textContent = 'Nueva Prenda · Código 8D';
+
+    const boton = document.querySelector('[data-save-product]');
+    if (boton) boton.textContent = 'Guardar prenda';
+
+    ['grupo', 'tipoProducto', 'modelo'].forEach(id => {
+        const select = document.getElementById(id);
+
+        if (select) {
+            select.dispatchEvent(
+                new Event('change', { bubbles: true })
+            );
+        }
+    });
+}
+
+function escapeHTML(value) {
+    return String(value ?? '').replace(/[&<>"']/g, character => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    })[character]);
+}
+
+let inventarioProductos = [];
+let productoEnEdicion = null;
+
+async function eliminarPrenda(codigoProducto) {
+    if (!codigoProducto) return;
+
+    const confirmar = confirm(
+        `¿Estás seguro de que deseas eliminar la prenda ${codigoProducto}?`
+    );
+
+    if (!confirmar) return;
+
+    try {
+        const respuesta = await fetch(
+            `/api/productos/${encodeURIComponent(codigoProducto)}`,
+            { method: 'DELETE' }
+        );
+
+        if (!respuesta.ok) {
+            const mensaje = await respuesta.text();
+            throw new Error(mensaje || 'No fue posible eliminar la prenda.');
+        }
+
+        showToast('Prenda eliminada', `Código: ${codigoProducto}`);
+        await cargarInventario();
+
+    } catch (error) {
+        console.error('Error al eliminar la prenda:', error);
+        showToast('Error al eliminar', error.message);
+    }
+}
+
+function esperarOpcionSelect(select, valor, tiempoMaximo = 5000) {
+    if (!select || valor == null || valor === '') {
+        return Promise.resolve(false);
+    }
+
+    const existe = () =>
+        Array.from(select.options).some(
+            opcion => opcion.value === String(valor)
+        );
+
+    if (existe()) return Promise.resolve(true);
+
+    return new Promise(resolve => {
+        let terminado = false;
+        let temporizador;
+
+        const observer = new MutationObserver(() => {
+            if (existe()) finalizar(true);
+        });
+
+        function finalizar(resultado) {
+            if (terminado) return;
+
+            terminado = true;
+            observer.disconnect();
+            clearTimeout(temporizador);
+            resolve(resultado);
+        }
+
+        observer.observe(select, {
+            childList: true,
+            subtree: true
+        });
+
+        temporizador = setTimeout(
+            () => finalizar(existe()),
+            tiempoMaximo
+        );
+    });
+}
+
+async function editarPrenda(codigoProducto) {
+    try {
+        const respuesta = await fetch(
+            `/api/productos/${encodeURIComponent(codigoProducto)}/edicion`
+        );
+
+        if (!respuesta.ok) {
+            throw new Error('No fue posible consultar los datos de la prenda.');
+        }
+
+        const producto = await respuesta.json();
+
+        const grupo = document.getElementById('grupo');
+        const tipo = document.getElementById('tipoProducto');
+        const modelo = document.getElementById('modelo');
+        const temporada = document.getElementById('temporada');
+        const talla = document.getElementById('talla');
+        const consecutivo = document.getElementById('consecutivo');
+        const codigoPreview = document.getElementById('codigoPreview');
+
+
+
+        productoEnEdicion = producto.codigoProducto || codigoProducto;
+        window.productoEnEdicion = productoEnEdicion;
+
+
+        document.getElementById('nombreProducto').value =
+            producto.nombre ?? '';
+
+        document.getElementById('descripcionProducto').value =
+            producto.descripcion ?? '';
+
+        document.getElementById('precioProducto').value =
+            producto.precio ?? '';
+
+        document.getElementById('stock').value =
+            producto.stock ?? 0;
+
+
+        if (grupo) {
+            await esperarOpcionSelect(grupo, producto.codigoGrupo);
+            grupo.value = producto.codigoGrupo ?? '';
+            grupo.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+
+
+        if (tipo) {
+            await esperarOpcionSelect(tipo, producto.codigoTipoProducto);
+            tipo.value = producto.codigoTipoProducto ?? '';
+            tipo.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+
+
+        if (modelo) {
+            await esperarOpcionSelect(modelo, producto.codigoModelo);
+            modelo.value = producto.codigoModelo ?? '';
+            modelo.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+
+
+        if (temporada) {
+            const temporadaGuardada = String(producto.idTemporada ?? '');
+
+            if (temporadaGuardada) {
+                const opcionDisponible = await esperarOpcionSelect(
+                    temporada,
+                    temporadaGuardada
+                );
+
+                if (opcionDisponible) {
+                    temporada.value = temporadaGuardada;
+
+
+                    temporada.dispatchEvent(
+                        new Event('input', { bubbles: true })
+                    );
+
+                    temporada.dispatchEvent(
+                        new Event('change', { bubbles: true })
+                    );
+                } else {
+                    console.warn(
+                        'No se encontró la temporada con ID:',
+                        temporadaGuardada
+                    );
+                }
+            } else {
+                temporada.value = '';
+
+                temporada.dispatchEvent(
+                    new Event('change', { bubbles: true })
+                );
+            }
+        }
+
+
+        if (talla) {
+            const tallaGuardada = String(producto.talla ?? '').trim();
+
+            if (typeof window.actualizarTallasProducto === 'function') {
+                window.actualizarTallasProducto(tallaGuardada);
+            } else {
+                talla.value = tallaGuardada;
+            }
+
+            talla.disabled = false;
+        }
+
+
+        if (typeof window.establecerColorProducto === 'function') {
+            window.establecerColorProducto(producto.color ?? '');
+        } else {
+            const color = document.getElementById('color');
+            if (color) color.value = producto.color ?? '';
+        }
+
+
+        if (consecutivo) {
+            consecutivo.value = producto.codigoProducto
+                ? producto.codigoProducto.slice(-2)
+                : '';
+        }
+
+        if (codigoPreview) {
+            codigoPreview.textContent =
+                producto.codigoProducto ?? '————————';
+        }
+
+        const titulo = document.getElementById('productModalTitle');
+        if (titulo) {
+            titulo.textContent = `Editar prenda · ${producto.codigoProducto}`;
+        }
+
+        const boton = document.querySelector('[data-save-product]');
+        if (boton) boton.textContent = 'Actualizar prenda';
+
+        openModal('new-product');
+
+    } catch (error) {
+        productoEnEdicion = null;
+        window.productoEnEdicion = null;
+
+        console.error('Error al editar la prenda:', error);
+        showToast('Error al editar', error.message);
+    }
+}
+
+function cargarOpcionesInventario() {
+    const filtroTalla = document.getElementById('sizeFilter');
+
+    if (!filtroTalla) return;
+
+    const tallaSeleccionada = filtroTalla.value;
+
+    const tallas = obtenerTallasCatalogo();
+
+    filtroTalla.replaceChildren(
+        new Option('Todas las tallas', '')
+    );
+
+    tallas.forEach(talla => {
+        filtroTalla.add(new Option(talla, talla));
+    });
+
+    if (tallas.includes(tallaSeleccionada)) {
+        filtroTalla.value = tallaSeleccionada;
+    }
+}
+
+function renderizarInventario() {
+    const filas = document.getElementById('inventoryRows');
+
+    filas.innerHTML = inventarioProductos.map(producto => {
+        const codigo = escapeHTML(producto.codigoProducto);
+        const nombre = escapeHTML(producto.nombre);
+        const grupo = escapeHTML(producto.grupo);
+        const tipo = escapeHTML(producto.tipo);
+        const talla = escapeHTML(producto.talla || 'Sin talla');
+        const color = escapeHTML(producto.color || 'Sin color');
+        const stock = Number(producto.stock) || 0;
+        const temporada = escapeHTML(producto.temporada || 'Sin temporada');
+        const estadoStock = stock <= 6 ? 'low' : 'good';
+
+        return `
+            <tr data-grupo="${grupo}" data-tipo="${tipo}" data-talla="${talla}">
+                <td class="mono">${codigo}</td>
+                <td>
+                    <div class="product-name">${nombre}</div>
+                    <div class="product-meta">${grupo} · ${tipo}</div>
+                </td>
+                <td>
+                    ${talla}
+                    <div class="product-meta">${color}</div>
+                </td>
+                <td>
+                    <span class="qty ${estadoStock}">${stock}</span>
+                </td>
+                <td class="mono">—</td>
+                <td>${temporada}</td>
+                <td>
+                    <div class="actions">
+                        <button
+                            class="icon-btn"
+                            type="button"
+                            data-action="edit"
+                            data-id="${codigo}"
+                            aria-label="Editar ${nombre}">
+                            <i class="fa-solid fa-marker"></i>
+                        </button>
+                        <button
+                            class="icon-btn"
+                            type="button"
+                            data-action="label"
+                            data-id="${codigo}"
+                            aria-label="Etiquetas ${nombre}">
+                            <i class="fa-solid fa-print"></i>
+                        </button>
+                        <button
+                            class="icon-btn"
+                            type="button"
+                            data-action="delete"
+                            data-id="${codigo}"
+                            aria-label="Eliminar ${nombre}">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
+
+    if (inventarioProductos.length === 0) {
+        filas.innerHTML = `
+            <tr>
+                <td colspan="7">No hay prendas registradas en el inventario.</td>
+            </tr>
+        `;
+    }
+
+    filterInventory();
+}
+
+async function cargarInventario() {
+    const filas = document.getElementById('inventoryRows');
+
+    try {
+        const respuesta = await fetch('/api/productos/inventario');
+
+        if (!respuesta.ok) {
+            throw new Error('No fue posible consultar el inventario.');
+        }
+
+        inventarioProductos = await respuesta.json();
+
+        cargarOpcionesInventario();
+        renderizarInventario();
+    } catch (error) {
+        console.error('Error al cargar el inventario:', error);
+
+        filas.innerHTML = `
+            <tr>
+                <td colspan="7">No fue posible cargar el inventario. Intenta nuevamente.</td>
+            </tr>
+        `;
+    }
+}
+
+function filterInventory() {
+    const query = document
+        .getElementById("inventorySearch")
+        .value.trim().toLocaleLowerCase("es");
+
+    const talla = document
+        .getElementById("sizeFilter")
+        .value.trim();
+
+    const grupo = document
+        .getElementById("groupFilter")
+        .value.trim();
+
+    const tipo = document
+        .getElementById("typeFilter")
+        .value.trim();
+
+    document.querySelectorAll("#inventoryRows tr").forEach(row => {
+
+        if (row.cells.length < 7) return;
+
+        const texto = row.textContent.toLocaleLowerCase("es");
+
+        const coincideBusqueda =
+            !query || texto.includes(query);
+
+        const coincideTalla =
+            !talla || row.dataset.talla === talla;
+
+        const coincideGrupo =
+            !grupo || row.dataset.grupo === grupo;
+
+        const coincideTipo =
+            !tipo || row.dataset.tipo === tipo;
+
+        const mostrar =
+            coincideBusqueda &&
+            coincideTalla &&
+            coincideGrupo &&
+            coincideTipo;
+
+        row.classList.toggle("hidden", !mostrar);
+    });
+}
+
+function filterMovements() {
+    const query = document.getElementById('movementSearch').value.trim().toLocaleLowerCase('es');
+    const type = document.getElementById('movementTypeFilter').value;
+
+    document.querySelectorAll('#movementRows tr').forEach((row) => {
+        const text = row.textContent.toLocaleLowerCase('es');
+        const movement = row.cells[1].textContent.trim();
+        const matchesQuery = !query || text.includes(query);
+        const matchesType = !type || movement.includes(type);
+        row.classList.toggle('hidden', !(matchesQuery && matchesType));
+    });
+}
+
+function filterCards(selectId, cardSelector, dataAttribute) {
+    const selected = document.getElementById(selectId).value;
+    document.querySelectorAll(cardSelector).forEach((card) => {
+        card.classList.toggle('hidden', Boolean(selected) && card.dataset[dataAttribute] !== selected);
+    });
+}
+
+function findBarcodeProduct() {
+    const input = document.getElementById('barcodeInput');
+    const result = document.getElementById('barcodeResult');
+    const code = input.value.trim().toLocaleLowerCase('es');
+    result.textContent = '';
+    if (!code) return;
+
+    const rows = [...document.querySelectorAll('#inventoryRows tr')];
+    const match = rows.find((row) => row.cells[0].textContent.trim().toLocaleLowerCase('es') === code)
+        || rows.find((row) => row.textContent.toLocaleLowerCase('es').includes(code));
+
+    if (!match) {
+        result.textContent = 'No se encontró una prenda con ese código o nombre.';
+        return;
+    }
+
+    const product = match.querySelector('.product-name')?.textContent.trim() || match.cells[1].textContent.trim();
+    const stock = match.cells[3].textContent.trim();
+    result.textContent = `Producto encontrado: ${product} · Referencia ${match.cells[0].textContent.trim()} · Stock ${stock} unidades.`;
+}
+
+document.addEventListener('click', (event) => {
+    const viewButton = event.target.closest('[data-view]');
+    if (viewButton) {
+        setView(viewButton.dataset.view);
+        return;
+    }
+
+    const closeButton = event.target.closest('[data-close]');
+    if (closeButton) {
+        closeModal();
+        return;
+    }
+
+    const actionButton = event.target.closest('[data-action]');
+    if (actionButton) {
+        handleAction(actionButton.dataset.action, actionButton.dataset.id);
+        return;
+    }
+
+    const storeButton = event.target.closest('[data-store]');
+    if (storeButton) {
+        selectStore(storeButton.dataset.store);
+        return;
+    }
+
+
+    if (event.target.closest('[data-save-product]')) {
+
+        const grupo = document.getElementById('grupo')?.value;
+        const tipoProducto = document.getElementById('tipoProducto')?.value;
+        const modelo = document.getElementById('modelo')?.value;
+
+        const nombre = document.getElementById('nombreProducto')?.value.trim();
+        const precio = document.getElementById('precioProducto')?.value;
+        const descripcion =
+            document.getElementById('descripcionProducto')?.value.trim() || '';
+
+        const talla = document.getElementById('talla')?.value;
+        const color = document.getElementById('color')?.value;
+
+        const temporadaValor = document.getElementById('temporada')?.value;
+        const stockValor = document.getElementById('stock')?.value;
+
+
+        if (
+            !grupo ||
+            !tipoProducto ||
+            !modelo ||
+            !nombre ||
+            precio === '' ||
+            precio == null ||
+            !talla ||
+            !color ||
+            stockValor === '' ||
+            stockValor == null ||
+            !Number.isInteger(Number(stockValor)) ||
+            Number(stockValor) < 0
+        ) {
+            showToast(
+                'Datos incompletos',
+                'Completa los campos obligatorios y verifica que el stock sea un entero igual o mayor que cero.'
+            );
+            return;
+        }
+
+
+        const boton = event.target.closest('[data-save-product]');
+
+        if (boton.disabled) return;
+
+        boton.disabled = true;
+
+
+        const datos = {
+            codigoGrupo: grupo,
+            codigoTipoProducto: tipoProducto,
+            codigoModelo: modelo,
+            nombre: nombre,
+            descripcion: descripcion,
+            precio: Number(precio),
+            talla: talla,
+            color: color,
+
+
+            idTemporada: temporadaValor ? Number(temporadaValor) : null,
+            stock: Number(stockValor)
+        };
+
+
+        const estabaEditando = productoEnEdicion !== null;
+
+        const url = estabaEditando
+            ? `/api/productos/${encodeURIComponent(productoEnEdicion)}/completo`
+            : '/api/productos/crear-completo';
+
+        const metodo = estabaEditando ? 'PUT' : 'POST';
+
+        fetch(url, {
+            method: metodo,
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(datos)
+        })
+            .then(async response => {
+                const resultado = await response.json().catch(() => ({}));
+
+                if (!response.ok) {
+                    throw new Error(
+                        resultado.detail ||
+                        resultado.message ||
+                        resultado.mensaje ||
+                        'No fue posible guardar la prenda.'
+                    );
+                }
+
+                return resultado;
+            })
+            .then(producto => {
+                const codigo = producto.codigoProducto;
+
+                productoEnEdicion = null;
+
+                prepararModalNuevaPrenda();
+                closeModal();
+
+                showToast(
+                    estabaEditando ? 'Prenda actualizada' : 'Prenda guardada',
+                    `Código: ${codigo}`
+                );
+
+                document.dispatchEvent(
+                    new CustomEvent('anb:producto-guardado', {
+                        detail: { producto }
+                    })
+                );
+            })
+            .catch(error => {
+                showToast(
+                    estabaEditando ? 'Error al actualizar' : 'Error al guardar',
+                    error.message
+                );
+            })
+            .finally(() => {
+                boton.disabled = false;
+            });
+
+        return;
+    }
+
+    if (event.target.closest('[data-save-movement]')) {
+        closeModal();
+        showToast('Movimiento registrado', 'La existencia fue actualizada y auditada.');
+        return;
+    }
+
+    if (event.target.closest('[data-save-transfer]')) {
+        closeModal();
+        showToast('Transferencia solicitada', 'Se creó la solicitud pendiente de aprobación.');
+        return;
+    }
+
+    if (event.target.closest('[data-print]')) {
+        closeModal();
+        window.print();
+    }
+});
+
+document.getElementById('newProductBtn')?.addEventListener('click', () => {
+    prepararModalNuevaPrenda();
+    openModal('new-product');
+});
+
+document.getElementById('barcodeBtn').addEventListener('click', () => openModal('barcode'));
+document.getElementById('labelsBtn').addEventListener('click', () => openModal('labels'));
+document.getElementById('storeBtn').addEventListener('click', () => toggleDropdown(storeMenu, document.getElementById('storeBtn')));
+document.getElementById('userBtn').addEventListener('click', () => toggleDropdown(userMenu, document.getElementById('userBtn')));
+document.getElementById('mobileBtn').addEventListener('click', () => {
+    const button = document.getElementById('mobileBtn');
+    const isOpen = navTabs.classList.toggle('open');
+    button.setAttribute('aria-expanded', String(isOpen));
+});
+
+modalBackdrop.addEventListener('click', (event) => {
+    if (event.target === modalBackdrop) closeModal();
+});
+
+window.addEventListener('click', (event) => {
+    if (!event.target.closest('.dropdown-wrap')) {
+        document.querySelectorAll('.dropdown').forEach((dropdown) => dropdown.classList.remove('open'));
+        document.querySelectorAll('.selector').forEach((selector) => selector.setAttribute('aria-expanded', 'false'));
+    }
+});
+
+window.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+        closeModal();
+        document.querySelectorAll('.dropdown').forEach((dropdown) => dropdown.classList.remove('open'));
+    }
+});
+
+document.getElementById("inventorySearch")
+    ?.addEventListener("input", filterInventory);
+
+document.getElementById("sizeFilter")
+    ?.addEventListener("change", filterInventory);
+
+document.getElementById("groupFilter")
+    ?.addEventListener("change", filterInventory);
+
+document.getElementById("typeFilter")
+    ?.addEventListener("change", filterInventory);
+
+document.addEventListener('anb:producto-guardado', () => {
+    cargarInventario();
+});
+
+inicializarFiltrosPremium();
+cargarFiltrosInventario();
+cargarInventario();
+
+document.getElementById('movementSearch').addEventListener('input', filterMovements);
+document.getElementById('movementTypeFilter').addEventListener('change', filterMovements);
+document.getElementById('transferStatusFilter').addEventListener('change', () => filterCards('transferStatusFilter', '#transferCards [data-transfer-status]', 'transferStatus'));
+document.getElementById('countStatusFilter').addEventListener('change', () => filterCards('countStatusFilter', '#countCards [data-count-status]', 'countStatus'));
+document.getElementById('barcodeInput').addEventListener('input', findBarcodeProduct);
+
+setView('dashboard');
