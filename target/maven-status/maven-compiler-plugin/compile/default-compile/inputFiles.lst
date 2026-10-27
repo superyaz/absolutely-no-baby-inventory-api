@@ -6,6 +6,7 @@ C:\Users\MI PC\Desktop\absolutely-no-baby-inventory-api\src\main\java\com\ANB\Co
 C:\Users\MI PC\Desktop\absolutely-no-baby-inventory-api\src\main\java\com\ANB\Controller\DetalleMovimientoController.java
 C:\Users\MI PC\Desktop\absolutely-no-baby-inventory-api\src\main\java\com\ANB\Controller\DetalleTransferenciaController.java
 C:\Users\MI PC\Desktop\absolutely-no-baby-inventory-api\src\main\java\com\ANB\Controller\GrupoProductoController.java
+C:\Users\MI PC\Desktop\absolutely-no-baby-inventory-api\src\main\java\com\ANB\Controller\HomeController.java
 C:\Users\MI PC\Desktop\absolutely-no-baby-inventory-api\src\main\java\com\ANB\Controller\InventarioController.java
 C:\Users\MI PC\Desktop\absolutely-no-baby-inventory-api\src\main\java\com\ANB\Controller\ModeloProductoController.java
 C:\Users\MI PC\Desktop\absolutely-no-baby-inventory-api\src\main\java\com\ANB\Controller\MovimientoController.java
@@ -20,6 +21,8 @@ C:\Users\MI PC\Desktop\absolutely-no-baby-inventory-api\src\main\java\com\ANB\Co
 C:\Users\MI PC\Desktop\absolutely-no-baby-inventory-api\src\main\java\com\ANB\Controller\TipoProductoController.java
 C:\Users\MI PC\Desktop\absolutely-no-baby-inventory-api\src\main\java\com\ANB\Controller\TransferenciaController.java
 C:\Users\MI PC\Desktop\absolutely-no-baby-inventory-api\src\main\java\com\ANB\Controller\UsuarioController.java
+C:\Users\MI PC\Desktop\absolutely-no-baby-inventory-api\src\main\java\com\ANB\Models\DTO\NuevaPrendaRequest.java
+C:\Users\MI PC\Desktop\absolutely-no-baby-inventory-api\src\main\java\com\ANB\Models\DTO\PrendaEdicionDTO.java
 C:\Users\MI PC\Desktop\absolutely-no-baby-inventory-api\src\main\java\com\ANB\Models\Entity\Auditoria.java
 C:\Users\MI PC\Desktop\absolutely-no-baby-inventory-api\src\main\java\com\ANB\Models\Entity\ConteoFisico.java
 C:\Users\MI PC\Desktop\absolutely-no-baby-inventory-api\src\main\java\com\ANB\Models\Entity\DetalleConteo.java
@@ -72,6 +75,7 @@ C:\Users\MI PC\Desktop\absolutely-no-baby-inventory-api\src\main\java\com\ANB\Mo
 C:\Users\MI PC\Desktop\absolutely-no-baby-inventory-api\src\main\java\com\ANB\Models\Service\MovimientoService.java
 C:\Users\MI PC\Desktop\absolutely-no-baby-inventory-api\src\main\java\com\ANB\Models\Service\PasswordHasher.java
 C:\Users\MI PC\Desktop\absolutely-no-baby-inventory-api\src\main\java\com\ANB\Models\Service\PermisoService.java
+C:\Users\MI PC\Desktop\absolutely-no-baby-inventory-api\src\main\java\com\ANB\Models\Service\ProductoCompletoService.java
 C:\Users\MI PC\Desktop\absolutely-no-baby-inventory-api\src\main\java\com\ANB\Models\Service\ProductoService.java
 C:\Users\MI PC\Desktop\absolutely-no-baby-inventory-api\src\main\java\com\ANB\Models\Service\ProductoVarianteService.java
 C:\Users\MI PC\Desktop\absolutely-no-baby-inventory-api\src\main\java\com\ANB\Models\Service\RolPermisoService.java

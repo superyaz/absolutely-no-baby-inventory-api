@@ -27,7 +27,7 @@ public class ModeloProductoController {
 
     @GetMapping
     public List<ModeloProducto> listar() {
-        return service.findAll();
+        return service.listarActivos();
     }
 
     @GetMapping("/{id}")

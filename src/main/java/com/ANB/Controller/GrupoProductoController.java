@@ -27,7 +27,7 @@ public class GrupoProductoController {
 
     @GetMapping
     public List<GrupoProducto> listar() {
-        return service.findAll();
+        return service.listarActivos();
     }
 
     @GetMapping("/{id}")
