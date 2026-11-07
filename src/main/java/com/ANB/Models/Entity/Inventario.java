@@ -6,8 +6,9 @@ import jakarta.validation.constraints.PositiveOrZero;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "inventario", uniqueConstraints = {@UniqueConstraint(columnNames = {"sucursal_id", "producto_variante_id"})})
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@Table(name = "inventario", uniqueConstraints = {
+        @UniqueConstraint(columnNames = { "sucursal_id", "producto_variante_id" }) })
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 public class Inventario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,10 +18,6 @@ public class Inventario {
     @PositiveOrZero
     @Column(name = "cantidad", nullable = false)
     private Integer cantidad;
-
-    @PositiveOrZero
-    @Column(name = "stock", nullable = false)
-    private Integer stock;
 
     @Column(name = "fecha_actualizacion", nullable = false)
     private LocalDateTime fechaActualizacion;
@@ -33,7 +30,8 @@ public class Inventario {
     @JoinColumn(name = "producto_variante_id", referencedColumnName = "id_producto_variante", nullable = false)
     private ProductoVariante productoVariante;
 
-    public Inventario() {}
+    public Inventario() {
+    }
 
     public Long getIdInventario() {
         return idInventario;
@@ -49,14 +47,6 @@ public class Inventario {
 
     public void setCantidad(Integer cantidad) {
         this.cantidad = cantidad;
-    }
-
-    public Integer getStock() {
-        return stock;
-    }
-
-    public void setStock(Integer stock) {
-        this.stock = stock;
     }
 
     public LocalDateTime getFechaActualizacion() {

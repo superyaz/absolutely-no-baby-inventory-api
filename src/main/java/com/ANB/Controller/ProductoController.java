@@ -12,6 +12,12 @@ import com.ANB.Models.Entity.ProductoVariante;
 import com.ANB.Models.Repository.ProductoVarianteRepository;
 import com.ANB.Models.Entity.GrupoProducto;
 import com.ANB.Models.Entity.TipoProducto;
+import com.ANB.Models.Entity.Inventario;
+import com.ANB.Models.Entity.Usuario;
+import com.ANB.Models.Repository.InventarioRepository;
+import com.ANB.Models.Repository.UsuarioRepository;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.web.server.ResponseStatusException;
 import com.ANB.Models.Repository.GrupoProductoRepository;
 import com.ANB.Models.Repository.TipoProductoRepository;
 import java.util.ArrayList;
@@ -38,15 +44,20 @@ public class ProductoController {
     private final ProductoVarianteRepository varianteRepository;
     private final GrupoProductoRepository grupoRepository;
     private final TipoProductoRepository tipoProductoRepository;
+    private final InventarioRepository inventarioRepository;
+    private final UsuarioRepository usuarioRepository;
 
     public ProductoController(ProductoService service, ProductoCompletoService productoCompletoService,
             ProductoVarianteRepository varianteRepository, GrupoProductoRepository grupoRepository,
-            TipoProductoRepository tipoProductoRepository) {
+            TipoProductoRepository tipoProductoRepository, InventarioRepository inventarioRepository,
+            UsuarioRepository usuarioRepository) {
         this.service = service;
         this.productoCompletoService = productoCompletoService;
         this.varianteRepository = varianteRepository;
         this.grupoRepository = grupoRepository;
         this.tipoProductoRepository = tipoProductoRepository;
+        this.inventarioRepository = inventarioRepository;
+        this.usuarioRepository = usuarioRepository;
     }
 
     @GetMapping
@@ -71,11 +82,38 @@ public class ProductoController {
 
     @PostMapping("/crear-completo")
     public ResponseEntity<Producto> crearCompleto(
-            @Valid @RequestBody NuevaPrendaRequest request) {
+            @Valid @RequestBody NuevaPrendaRequest request,
+            HttpSession session) {
 
-        Producto producto = productoCompletoService.crearPrenda(request);
+        Long usuarioId = obtenerUsuarioIdSesion(session);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(producto);
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.UNAUTHORIZED,
+                        "No se encontró el usuario autenticado."));
+
+        if (!Boolean.TRUE.equals(usuario.getActivo())) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "El usuario está inactivo.");
+        }
+
+        if (usuario.getSucursal() == null
+                || !Boolean.TRUE.equals(usuario.getSucursal().getActivo())) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "El usuario no tiene una sucursal activa asignada.");
+        }
+
+        Producto producto = productoCompletoService.crearPrenda(
+                request,
+                usuario.getSucursal().getIdSucursal());
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(producto);
     }
 
     @GetMapping("/siguiente-codigo")
@@ -91,66 +129,94 @@ public class ProductoController {
     }
 
     @GetMapping("/inventario")
-    public List<Map<String, Object>> listarInventario() {
+    public List<Map<String, Object>> listarInventario(HttpSession session) {
 
-        List<Producto> productos = service.findAll();
+        Long usuarioId = obtenerUsuarioIdSesion(session);
 
-        List<ProductoVariante> variantes = varianteRepository.findAll();
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.UNAUTHORIZED,
+                        "No se encontró el usuario de la sesión."));
 
-        Map<String, List<ProductoVariante>> variantesPorProducto = variantes.stream()
-                .filter(v -> v.getProducto() != null)
-                .filter(v -> !Boolean.FALSE.equals(v.getActivo()))
-                .collect(Collectors.groupingBy(
-                        v -> v.getProducto().getCodigoProducto()));
+        if (usuario.getSucursal() == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "El usuario no tiene una sucursal asignada.");
+        }
 
-        List<Map<String, Object>> resultado = new ArrayList<>();
+        Long sucursalId = usuario.getSucursal().getIdSucursal();
 
-        for (Producto producto : productos) {
+        List<Inventario> existencias = inventarioRepository.findBySucursal_IdSucursal(sucursalId);
 
-            if (Boolean.FALSE.equals(producto.getActivo())) {
+        Map<Long, Integer> stockPorVariante = new HashMap<>();
+
+        for (Inventario existencia : existencias) {
+
+            if (existencia.getProductoVariante() == null) {
                 continue;
             }
 
-            List<ProductoVariante> variantesProducto = variantesPorProducto.get(producto.getCodigoProducto());
+            Long varianteId = existencia.getProductoVariante().getIdProductoVariante();
 
-            if (variantesProducto == null || variantesProducto.isEmpty()) {
-                variantesProducto = java.util.Collections.singletonList(null);
+            stockPorVariante.put(
+                    varianteId,
+                    existencia.getCantidad() == null
+                            ? 0
+                            : existencia.getCantidad());
+        }
+
+        List<ProductoVariante> variantes = varianteRepository.findAll();
+
+        List<Map<String, Object>> resultado = new ArrayList<>();
+
+        for (ProductoVariante variante : variantes) {
+
+            Producto producto = variante.getProducto();
+
+            if (producto == null
+                    || Boolean.FALSE.equals(producto.getActivo())
+                    || Boolean.FALSE.equals(variante.getActivo())) {
+                continue;
             }
 
-            for (ProductoVariante variante : variantesProducto) {
+            Map<String, Object> fila = new HashMap<>();
 
-                Map<String, Object> fila = new HashMap<>();
+            fila.put("codigoProducto", producto.getCodigoProducto());
+            fila.put("varianteId", variante.getIdProductoVariante());
+            fila.put("nombre", producto.getNombre());
 
-                fila.put("codigoProducto", producto.getCodigoProducto());
-                fila.put("nombre", producto.getNombre());
-                fila.put(
-                        "grupo",
-                        producto.getGrupo() == null
-                                ? ""
-                                : producto.getGrupo().getNombre());
+            fila.put("grupo",
+                    producto.getGrupo() == null
+                            ? ""
+                            : producto.getGrupo().getNombre());
 
-                fila.put(
-                        "tipo",
-                        producto.getTipoProducto() == null
-                                ? ""
-                                : producto.getTipoProducto().getNombre());
-                fila.put("stock", producto.getStock() == null ? 0 : producto.getStock());
-                fila.put(
-                        "temporada",
-                        producto.getTemporada() == null
-                                ? "Sin temporada"
-                                : producto.getTemporada().getNombre());
+            fila.put("tipo",
+                    producto.getTipoProducto() == null
+                            ? ""
+                            : producto.getTipoProducto().getNombre());
 
-                fila.put(
-                        "talla",
-                        variante == null ? "" : variante.getTalla());
+            fila.put(
+                    "stock",
+                    stockPorVariante.getOrDefault(
+                            variante.getIdProductoVariante(), 0));
 
-                fila.put(
-                        "color",
-                        variante == null ? "" : variante.getColor());
+            fila.put("precio",
+                    producto.getPrecio() == null
+                            ? 0
+                            : producto.getPrecio());
 
-                resultado.add(fila);
-            }
+            fila.put("temporada",
+                    producto.getTemporada() == null
+                            ? "Sin temporada"
+                            : producto.getTemporada().getNombre());
+
+            fila.put("talla", variante.getTalla());
+            fila.put("color", variante.getColor());
+
+            fila.put("sucursalId", sucursalId);
+            fila.put("sucursal", usuario.getSucursal().getNombre());
+
+            resultado.add(fila);
         }
 
         return resultado;
@@ -226,5 +292,26 @@ public class ProductoController {
         productoCompletoService.eliminarPrenda(id);
 
         return ResponseEntity.noContent().build();
+    }
+
+    private Long obtenerUsuarioIdSesion(HttpSession session) {
+
+        Object valor = session.getAttribute("ANB_USUARIO_ID");
+
+        if (valor instanceof Number numero) {
+            return numero.longValue();
+        }
+
+        if (valor instanceof String texto) {
+            try {
+                return Long.parseLong(texto);
+            } catch (NumberFormatException ignored) {
+
+            }
+        }
+
+        throw new ResponseStatusException(
+                HttpStatus.UNAUTHORIZED,
+                "La sesión no contiene un usuario autenticado.");
     }
 }

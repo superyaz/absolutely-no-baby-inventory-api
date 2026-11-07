@@ -2,18 +2,18 @@ package com.ANB.Models.Entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "detalle_movimiento")
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 public class DetalleMovimiento {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_detalle_movimiento", nullable = false)
     private Long idDetalleMovimiento;
 
-    @Positive
+    @NotNull
     @Column(name = "cantidad", nullable = false)
     private Integer cantidad;
 
@@ -25,7 +25,8 @@ public class DetalleMovimiento {
     @JoinColumn(name = "producto_variante_id", referencedColumnName = "id_producto_variante", nullable = false)
     private ProductoVariante productoVariante;
 
-    public DetalleMovimiento() {}
+    public DetalleMovimiento() {
+    }
 
     public Long getIdDetalleMovimiento() {
         return idDetalleMovimiento;

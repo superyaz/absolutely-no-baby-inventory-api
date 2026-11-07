@@ -1,24 +1,17 @@
 package com.ANB.Controller;
 
-import com.ANB.Models.Entity.ConteoFisico;
+import com.ANB.Models.DTO.ConteoFisicoDTO;
 import com.ANB.Models.Service.ConteoFisicoService;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/conteos-fisicos")
 public class ConteoFisicoController {
+
     private final ConteoFisicoService service;
 
     public ConteoFisicoController(ConteoFisicoService service) {
@@ -26,28 +19,56 @@ public class ConteoFisicoController {
     }
 
     @GetMapping
-    public List<ConteoFisico> listar() {
-        return service.findAll();
+    public List<ConteoFisicoDTO.Resumen> listar(HttpSession session) {
+        return service.listar(
+                AuthController.obtenerUsuarioId(session));
     }
 
     @GetMapping("/{id}")
-    public ConteoFisico obtener(@PathVariable Long id) {
-        return service.findById(id);
+    public ConteoFisicoDTO.Consulta obtener(
+            @PathVariable Long id,
+            HttpSession session) {
+        return service.obtener(
+                id,
+                AuthController.obtenerUsuarioId(session));
     }
 
     @PostMapping
-    public ResponseEntity<ConteoFisico> crear(@Valid @RequestBody ConteoFisico entity) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(service.create(entity));
+    @ResponseStatus(HttpStatus.CREATED)
+    public ConteoFisicoDTO.Resumen crear(
+            @RequestBody(required = false) ConteoFisicoDTO.CrearRequest request,
+            HttpSession session) {
+        return service.crear(
+                request,
+                AuthController.obtenerUsuarioId(session));
     }
 
-    @PutMapping("/{id}")
-    public ConteoFisico actualizar(@PathVariable Long id, @Valid @RequestBody ConteoFisico entity) {
-        return service.update(id, entity);
+    @PutMapping("/{id}/detalles")
+    public ConteoFisicoDTO.Consulta guardarDetalle(
+            @PathVariable Long id,
+            @Valid @RequestBody ConteoFisicoDTO.DetalleRequest request,
+            HttpSession session) {
+        return service.guardarDetalle(
+                id,
+                request,
+                AuthController.obtenerUsuarioId(session));
     }
 
-    @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void eliminar(@PathVariable Long id) {
-        service.delete(id);
+    @PostMapping("/{id}/finalizar")
+    public ConteoFisicoDTO.Resumen finalizar(
+            @PathVariable Long id,
+            HttpSession session) {
+        return service.finalizar(
+                id,
+                AuthController.obtenerUsuarioId(session));
+    }
+
+    @PostMapping("/{id}/aplicar")
+    public ConteoFisicoDTO.Resumen aplicar(
+            @PathVariable Long id,
+            HttpSession session) {
+        return service.aplicar(
+                id,
+                AuthController.obtenerUsuarioId(session));
     }
 }

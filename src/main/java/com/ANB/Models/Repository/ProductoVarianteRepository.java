@@ -1,4 +1,3 @@
-
 package com.ANB.Models.Repository;
 
 import com.ANB.Models.Entity.ProductoVariante;
@@ -11,4 +10,6 @@ public interface ProductoVarianteRepository
         extends JpaRepository<ProductoVariante, Long> {
 
     List<ProductoVariante> findByProducto_CodigoProducto(String codigoProducto);
+
+    List<ProductoVariante> findByActivoTrue();
 }
