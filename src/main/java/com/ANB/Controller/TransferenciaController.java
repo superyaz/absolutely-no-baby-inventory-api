@@ -1,53 +1,143 @@
 package com.ANB.Controller;
 
-import com.ANB.Models.Entity.Transferencia;
+import com.ANB.Models.DTO.CrearTransferenciaRequest;
+import com.ANB.Models.DTO.RechazarTransferenciaRequest;
+import com.ANB.Models.DTO.TransferenciaContextoDTO;
+import com.ANB.Models.DTO.TransferenciaDTO;
+import com.ANB.Models.DTO.TransferenciaVarianteDTO;
+
 import com.ANB.Models.Service.TransferenciaService;
+
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+import java.util.Map;
 import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/transferencias")
 public class TransferenciaController {
+
     private final TransferenciaService service;
 
-    public TransferenciaController(TransferenciaService service) {
+    public TransferenciaController(
+            TransferenciaService service) {
+
         this.service = service;
     }
 
+    @GetMapping("/contexto")
+    public TransferenciaContextoDTO contexto(
+            HttpSession session) {
+
+        Long usuarioId = AuthController.obtenerUsuarioId(session);
+
+        return service.obtenerContexto(usuarioId);
+    }
+
+    @GetMapping("/variantes")
+    public List<TransferenciaVarianteDTO> variantes(
+
+            @RequestParam Long sucursalOrigenId,
+
+            @RequestParam(required = false, defaultValue = "") String q,
+
+            HttpSession session) {
+
+        Long usuarioId = AuthController.obtenerUsuarioId(session);
+
+        return service.buscarVariantes(
+                usuarioId,
+                sucursalOrigenId,
+                q);
+    }
+
     @GetMapping
-    public List<Transferencia> listar() {
-        return service.findAll();
+    public List<TransferenciaDTO> listar(
+            HttpSession session) {
+
+        Long usuarioId = AuthController.obtenerUsuarioId(session);
+
+        return service.listar(usuarioId);
     }
 
     @GetMapping("/{id}")
-    public Transferencia obtener(@PathVariable Long id) {
-        return service.findById(id);
+    public TransferenciaDTO obtener(
+            @PathVariable Long id,
+            HttpSession session) {
+
+        Long usuarioId = AuthController.obtenerUsuarioId(session);
+
+        return service.obtener(id, usuarioId);
     }
 
-    @PostMapping
-    public ResponseEntity<Transferencia> crear(@Valid @RequestBody Transferencia entity) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(service.create(entity));
+    @PostMapping("/solicitar")
+    public ResponseEntity<TransferenciaDTO> solicitar(
+
+            @Valid @RequestBody CrearTransferenciaRequest request,
+
+            HttpSession session) {
+
+        Long usuarioId = AuthController.obtenerUsuarioId(session);
+
+        TransferenciaDTO transferencia = service.solicitar(request, usuarioId);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(transferencia);
     }
 
-    @PutMapping("/{id}")
-    public Transferencia actualizar(@PathVariable Long id, @Valid @RequestBody Transferencia entity) {
-        return service.update(id, entity);
+    @PostMapping("/{id}/aprobar")
+    public TransferenciaDTO aprobar(
+            @PathVariable Long id,
+            HttpSession session) {
+
+        Long usuarioId = AuthController.obtenerUsuarioId(session);
+
+        return service.aprobar(id, usuarioId);
     }
 
-    @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void eliminar(@PathVariable Long id) {
-        service.delete(id);
+    @PostMapping("/{id}/recibir")
+    public TransferenciaDTO recibir(
+            @PathVariable Long id,
+            HttpSession session) {
+
+        Long usuarioId = AuthController.obtenerUsuarioId(session);
+
+        return service.recibir(id, usuarioId);
+    }
+
+    @PostMapping("/{id}/rechazar")
+    public TransferenciaDTO rechazar(
+
+            @PathVariable Long id,
+
+            @Valid @RequestBody RechazarTransferenciaRequest request,
+
+            HttpSession session) {
+
+        Long usuarioId = AuthController.obtenerUsuarioId(session);
+
+        return service.rechazar(
+                id,
+                request,
+                usuarioId);
+    }
+
+    @GetMapping("/pendientes/contador")
+    public Map<String, Long> contarPendientes(
+            HttpSession session) {
+
+        Long usuarioId = AuthController.obtenerUsuarioId(session);
+
+        long cantidad = service.contarPendientesAccion(usuarioId);
+
+        return Map.of(
+                "cantidad",
+                cantidad);
     }
 }

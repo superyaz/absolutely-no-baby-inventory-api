@@ -7,6 +7,10 @@ import com.ANB.Models.Entity.Producto;
 import com.ANB.Models.Entity.ProductoVariante;
 import com.ANB.Models.Entity.Temporada;
 import com.ANB.Models.Entity.TipoProducto;
+import com.ANB.Models.Entity.Inventario;
+import com.ANB.Models.Entity.Sucursal;
+import com.ANB.Models.Repository.InventarioRepository;
+import com.ANB.Models.Repository.SucursalRepository;
 import com.ANB.Models.Repository.GrupoProductoRepository;
 import com.ANB.Models.Repository.ModeloProductoRepository;
 import com.ANB.Models.Repository.ProductoRepository;
@@ -29,6 +33,8 @@ public class ProductoCompletoService {
         private final TipoProductoRepository tipoRepository;
         private final ModeloProductoRepository modeloRepository;
         private final TemporadaRepository temporadaRepository;
+        private final InventarioRepository inventarioRepository;
+        private final SucursalRepository sucursalRepository;
 
         public ProductoCompletoService(
                         ProductoRepository productoRepository,
@@ -36,7 +42,9 @@ public class ProductoCompletoService {
                         GrupoProductoRepository grupoRepository,
                         TipoProductoRepository tipoRepository,
                         ModeloProductoRepository modeloRepository,
-                        TemporadaRepository temporadaRepository) {
+                        TemporadaRepository temporadaRepository,
+                        InventarioRepository inventarioRepository,
+                        SucursalRepository sucursalRepository) {
 
                 this.productoRepository = productoRepository;
                 this.varianteRepository = varianteRepository;
@@ -44,6 +52,8 @@ public class ProductoCompletoService {
                 this.tipoRepository = tipoRepository;
                 this.modeloRepository = modeloRepository;
                 this.temporadaRepository = temporadaRepository;
+                this.inventarioRepository = inventarioRepository;
+                this.sucursalRepository = sucursalRepository;
         }
 
         @Transactional(readOnly = true)
@@ -85,12 +95,33 @@ public class ProductoCompletoService {
         }
 
         @Transactional
-        public Producto crearPrenda(NuevaPrendaRequest request) {
+        public Producto crearPrenda(NuevaPrendaRequest request,
+                        Long sucursalAutenticadaId) {
 
                 if (request.getStock() != null && request.getStock() < 0) {
                         throw new ResponseStatusException(
                                         HttpStatus.BAD_REQUEST,
                                         "El stock inicial no puede ser negativo.");
+                }
+
+                if (sucursalAutenticadaId == null) {
+
+                        throw new ResponseStatusException(
+                                        HttpStatus.FORBIDDEN,
+                                        "El usuario no tiene una sucursal asignada.");
+                }
+
+                Sucursal sucursal = sucursalRepository
+                                .findById(sucursalAutenticadaId)
+                                .orElseThrow(() -> new ResponseStatusException(
+                                                HttpStatus.BAD_REQUEST,
+                                                "La sucursal seleccionada no existe."));
+
+                if (!Boolean.TRUE.equals(sucursal.getActivo())) {
+
+                        throw new ResponseStatusException(
+                                        HttpStatus.BAD_REQUEST,
+                                        "La sucursal seleccionada está inactiva.");
                 }
 
                 GrupoProducto grupo = grupoRepository
@@ -182,7 +213,23 @@ public class ProductoCompletoService {
                 variante.setActivo(true);
                 variante.setProducto(producto);
 
-                varianteRepository.save(variante);
+                variante = varianteRepository.saveAndFlush(variante);
+
+                Inventario inventario = new Inventario();
+
+                inventario.setSucursal(sucursal);
+
+                inventario.setProductoVariante(variante);
+
+                inventario.setCantidad(
+                                producto.getStock() != null
+                                                ? producto.getStock()
+                                                : 0);
+
+                inventario.setFechaActualizacion(
+                                LocalDateTime.now());
+
+                inventarioRepository.save(inventario);
 
                 return producto;
         }
