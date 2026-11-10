@@ -29,14 +29,17 @@ let transferDraft = {
 };
 
 let transferSearchTimer = null;
-
 let transferSearchRequest = 0;
-
 let transferSearchResults = [];
-
 let transferenciasActuales = [];
-
 let transferSaving = false;
+let movementPresetFromAlert = null;
+let transferPresetFromAlertPending = null;
+let transferPresetFromAlertActive = null;
+let transferDefaultSelectionInProgress = false;
+let transferPresetRequest = 0;
+let alertasStock = [];
+let alertasStockRequest = 0;
 
 const tallasPorModelo = {
     "01": ["RN", "0M", "0-3M"],
@@ -54,7 +57,8 @@ function inicializarFiltrosPremium() {
         'movementDateFilter',
         'transferStatusFilter',
         'transferOriginStore',
-        'countStatusFilter'
+        'countStatusFilter',
+        'alertSeverityFilter'
     ];
 
     ids.forEach(id => {
@@ -1091,6 +1095,485 @@ async function cargarFiltrosInventario() {
     ]);
 }
 
+
+function estadoAlertaStock(item) {
+    return Number(item.stockActual) <= 0
+        ? 'AGOTADO'
+        : 'BAJO';
+}
+
+function formatoNumeroAlertaStock(valor) {
+    return new Intl.NumberFormat('es-CO')
+        .format(Number(valor) || 0);
+}
+
+function actualizarBadgeNavAlertasStock(alertas) {
+
+
+    const productosAlertados = new Set(
+        (Array.isArray(alertas) ? alertas : [])
+            .map(item => item?.codigoProducto)
+            .filter(codigo =>
+                codigo !== null &&
+                codigo !== undefined &&
+                String(codigo).trim() !== ''
+            )
+            .map(codigo => String(codigo).trim())
+    ).size;
+
+
+    const badge = document.getElementById(
+        'stockAlertNavBadge'
+    );
+
+    if (!badge) return;
+
+
+    badge.textContent = formatoNumeroAlertaStock(
+        productosAlertados
+    );
+
+
+    badge.classList.toggle(
+        'hidden',
+        productosAlertados === 0
+    );
+
+
+    badge.setAttribute(
+        'aria-label',
+        `${productosAlertados} ${productosAlertados === 1 ? 'producto' : 'productos'
+        } con alerta de stock bajo`
+    );
+}
+
+
+async function sincronizarBadgeAlertasStock() {
+
+    try {
+
+
+        const datos = await fetchAlertasStock(
+            '/api/inventario/alertas-stock'
+        );
+
+
+        actualizarBadgeNavAlertasStock(
+            Array.isArray(datos) ? datos : []
+        );
+
+    } catch (error) {
+
+        console.warn(
+            'No fue posible actualizar el contador de alertas:',
+            error
+        );
+
+    }
+}
+
+async function fetchAlertasStock(url) {
+
+    const response = await fetch(url, {
+        credentials: 'same-origin'
+    });
+
+    const data = await response.json().catch(() => ({}));
+
+    if (response.status === 401) {
+        window.location.replace('/login');
+        throw new Error('Tu sesión expiró. Inicia sesión nuevamente.');
+    }
+
+    if (!response.ok) {
+        throw new Error(
+            data.detail ||
+            data.mensaje ||
+            data.message ||
+            'No fue posible consultar las alertas de stock.'
+        );
+    }
+
+    return data;
+}
+
+
+async function cargarAlertasStock() {
+
+    const contenedor = document.getElementById('alertCards');
+
+    if (!contenedor) return;
+
+    const requestId = ++alertasStockRequest;
+
+    contenedor.innerHTML = `
+        <div class="alerts-loading">
+            <i class="fa-solid fa-circle-notch fa-spin"></i>
+            <span>Consultando existencias de tu sucursal...</span>
+        </div>
+    `;
+
+    try {
+
+        const [usuario, datos] = await Promise.all([
+
+            obtenerUsuarioSesionActual(),
+
+            fetchAlertasStock('/api/inventario/alertas-stock')
+
+        ]);
+
+        if (requestId !== alertasStockRequest) return;
+
+        alertasStock = Array.isArray(datos) ? datos : [];
+
+
+
+        const nombreSucursal =
+            document.getElementById('alertsBranchName');
+
+        if (nombreSucursal) {
+
+            nombreSucursal.textContent =
+                `${usuario.sucursal || 'Sucursal'}`
+                    .trim();
+
+        }
+
+
+
+        const totalVariantes = alertasStock.length;
+
+        const unidadesActuales = alertasStock.reduce(
+            (total, item) =>
+                total + Math.max(
+                    0,
+                    Number(item.stockActual) || 0
+                ),
+            0
+        );
+
+        const agotadas = alertasStock.filter(
+            item => Number(item.stockActual) <= 0
+        ).length;
+
+        const unidadesParaMinimo = alertasStock.reduce(
+            (total, item) =>
+                total + Math.max(
+                    0,
+                    Number(item.unidadesParaMinimo) || 0
+                ),
+            0
+        );
+
+        const indicadores = {
+
+            alertMetricVariants: totalVariantes,
+
+            alertMetricUnits: unidadesActuales,
+
+            alertMetricOutOfStock: agotadas,
+
+            alertMetricMissing: unidadesParaMinimo
+
+        };
+
+        Object.entries(indicadores).forEach(([id, valor]) => {
+
+            const elemento = document.getElementById(id);
+
+            if (elemento) {
+                elemento.textContent =
+                    formatoNumeroAlertaStock(valor);
+            }
+
+        });
+
+        actualizarBadgeNavAlertasStock(alertasStock);
+        renderizarAlertasStock();
+
+    } catch (error) {
+
+        if (requestId !== alertasStockRequest) return;
+
+        console.error(
+            'Error cargando alertas de stock:',
+            error
+        );
+
+        contenedor.innerHTML = `
+            <div class="alerts-empty-state is-error">
+
+                <span class="alerts-empty-icon">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </span>
+
+                <strong>
+                    No fue posible cargar las alertas
+                </strong>
+
+                <p>${escapeHTML(error.message)}</p>
+
+                <button
+                    class="btn"
+                    type="button"
+                    data-alert-reload
+                >
+                    <i class="fa-solid fa-rotate"></i>
+                    Reintentar
+                </button>
+
+            </div>
+        `;
+    }
+}
+
+
+function renderizarAlertasStock() {
+
+    const contenedor =
+        document.getElementById('alertCards');
+
+    if (!contenedor) return;
+
+    const busqueda = document
+        .getElementById('alertSearch')
+        ?.value
+        .trim()
+        .toLocaleLowerCase('es') || '';
+
+    const filtro =
+        document.getElementById('alertSeverityFilter')?.value || '';
+
+    const filtradas = alertasStock.filter(item => {
+
+        const texto = [
+
+            item.codigoProducto,
+            item.nombreProducto,
+            item.codigoBarras,
+            item.talla,
+            item.color,
+            item.temporada
+
+        ].filter(Boolean)
+            .join(' ')
+            .toLocaleLowerCase('es');
+
+        const coincideBusqueda =
+            !busqueda || texto.includes(busqueda);
+
+        const coincideEstado =
+            !filtro || estadoAlertaStock(item) === filtro;
+
+        return coincideBusqueda && coincideEstado;
+
+    });
+
+    if (!filtradas.length) {
+
+        const sinAlertas = alertasStock.length === 0;
+
+        contenedor.innerHTML = `
+            <div class="alerts-empty-state ${sinAlertas ? 'is-clear' : ''}">
+
+                <span class="alerts-empty-icon">
+                    <i class="fa-solid ${sinAlertas
+                ? 'fa-circle-check'
+                : 'fa-filter-circle-xmark'}"></i>
+                </span>
+
+                <strong>
+                    ${sinAlertas
+                ? 'Todo está bajo control'
+                : 'No hay resultados para este filtro'}
+                </strong>
+
+                <p>
+                    ${sinAlertas
+                ? 'No hay variantes por debajo de su mínimo en esta sucursal.'
+                : 'Prueba con otro término de búsqueda o cambia el filtro de alertas.'}
+                </p>
+
+                ${sinAlertas
+                ? ''
+                : '<button class="btn" type="button" data-alert-clear-filters>Limpiar filtros</button>'}
+
+            </div>
+        `;
+
+        return;
+    }
+
+    contenedor.innerHTML = filtradas.map(item => {
+
+        const id = Number(item.idProductoVariante);
+
+        const actual = Math.max(
+            0,
+            Number(item.stockActual) || 0
+        );
+
+        const minimo = Math.max(
+            0,
+            Number(item.stockMinimo) || 0
+        );
+
+        const faltan = Math.max(
+            0,
+            Number(item.unidadesParaMinimo) || (minimo - actual)
+        );
+
+        const estado = estadoAlertaStock(item);
+
+        const critico = estado === 'AGOTADO';
+
+        const porcentaje = minimo > 0
+            ? Math.max(
+                0,
+                Math.min(
+                    100,
+                    Math.round((actual / minimo) * 100)
+                )
+            )
+            : (actual > 0 ? 100 : 0);
+
+        const metadatos = [
+
+            `Código de barras ${item.codigoBarras || '—'}`,
+            `Talla ${item.talla || '—'}`,
+            item.color || null,
+            item.temporada || null
+
+        ].filter(Boolean).join(' · ');
+
+        return `
+            <article class="alert-stock-card ${critico ? 'is-critical' : 'is-low'}">
+
+                <div class="alert-stock-main">
+
+                    <span class="alert-stock-product-icon">
+                        <i class="fa-solid fa-shirt"></i>
+                    </span>
+
+                    <div class="alert-stock-product-copy">
+
+                        <div class="alert-stock-topline">
+
+                            <span class="alert-stock-code">
+                                ${escapeHTML(item.codigoProducto || 'SIN CÓDIGO')}
+                            </span>
+
+                            <span class="alert-stock-status ${critico ? 'is-critical' : 'is-low'}">
+
+                                <i class="fa-solid ${critico
+                ? 'fa-circle-xmark'
+                : 'fa-triangle-exclamation'}"></i>
+
+                                ${critico ? 'AGOTADO' : 'BAJO MÍNIMO'}
+
+                            </span>
+
+                        </div>
+
+                        <h3>
+                            ${escapeHTML(item.nombreProducto || 'Prenda sin nombre')}
+                        </h3>
+
+                        <p>
+                            ${escapeHTML(metadatos)}
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="alert-stock-level">
+
+                    <div class="alert-stock-values">
+
+                        <div>
+                            <small>Existencia</small>
+
+                            <strong class="${critico ? 'is-critical' : ''}">
+                                ${formatoNumeroAlertaStock(actual)}
+                            </strong>
+                        </div>
+
+                        <div>
+                            <small>Mínimo</small>
+
+                            <strong>
+                                ${formatoNumeroAlertaStock(minimo)}
+                            </strong>
+                        </div>
+
+                        <div>
+                            <small>Para mínimo</small>
+
+                            <strong>
+                                ${formatoNumeroAlertaStock(faltan)}
+                            </strong>
+                        </div>
+
+                    </div>
+
+                    <div class="alert-stock-progress ${critico ? 'is-critical' : ''}">
+                        <span style="width:${porcentaje}%"></span>
+                    </div>
+
+                    <div class="alert-stock-progress-caption">
+
+                        <span>
+                            ${porcentaje}% del mínimo configurado
+                        </span>
+
+                        <span>
+                            ${critico
+                ? 'Reposición prioritaria'
+                : 'Requiere reposición'}
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="alert-stock-actions">
+
+                    <button
+                        class="btn alerts-transfer-action"
+                        type="button"
+                        data-action="alert-transfer"
+                        data-id="${id}"
+                        data-barcode="${escapeHTML(item.codigoBarras || '')}"
+                        data-product-code="${escapeHTML(item.codigoProducto || '')}"
+                    >
+                        <i class="fa-solid fa-right-left"></i>
+                        Trasladar
+                    </button>
+
+                    <button
+                        class="btn btn-red alerts-entry-action"
+                        type="button"
+                        data-action="alert-entry"
+                        data-id="${id}"
+                        data-barcode="${escapeHTML(item.codigoBarras || '')}"
+                        data-product-code="${escapeHTML(item.codigoProducto || '')}"
+                    >
+                        <i class="fa-solid fa-plus"></i>
+                        Entrada
+                    </button>
+
+                </div>
+
+            </article>
+        `;
+
+    }).join('');
+}
+
 function setView(viewName) {
     const target = document.querySelector(`[data-section="${viewName}"]`);
     if (!target) return;
@@ -1113,16 +1596,15 @@ function setView(viewName) {
     if (viewName === 'counts') {
         cargarConteosFisicos();
     }
+
+    if (viewName === 'alerts') {
+        void cargarAlertasStock();
+    }
 }
 
 function prepararConsultaEscaner() {
     const input = document.getElementById('barcodeInput');
     const resultado = document.getElementById('barcodeResult');
-
-    if (scannerReadTimer !== null) {
-        clearTimeout(scannerReadTimer);
-        scannerReadTimer = null;
-    }
 
     if (input) {
         input.value = '';
@@ -1183,13 +1665,13 @@ function openModal(name, relatedId = null) {
 
 function closeModal() {
     detenerLectorCamara(false);
-
     window.clearTimeout(transferSearchTimer);
-
+    movementPresetFromAlert = null;
+    transferPresetFromAlertPending = null;
+    transferPresetFromAlertActive = null;
+    transferPresetRequest++;
     transferSearchRequest++;
-
     modalBackdrop.classList.add('hidden');
-
     modal.querySelectorAll('[data-modal-content]').forEach(panel => {
         panel.classList.add('hidden');
     });
@@ -1418,12 +1900,6 @@ async function cargarCatalogosMovimiento() {
             obtenerUsuarioSesionActual()
         ]);
 
-        if (!usuarioResponse.ok) {
-            throw new Error(
-                'No fue posible consultar el usuario autenticado.'
-            );
-        }
-
         if (!tiposResponse.ok) {
             throw new Error(
                 'No fue posible consultar los tipos de movimiento.'
@@ -1518,9 +1994,54 @@ async function cargarCatalogosMovimiento() {
 
 async function prepararModalMovimiento() {
 
+    const preset = movementPresetFromAlert;
+
+    movementPresetFromAlert = null;
+
     resetearModalMovimiento();
 
     await cargarCatalogosMovimiento();
+
+    if (!preset || !movementTypesReady) return;
+
+    try {
+
+        const termino =
+            preset.codigoBarras ||
+            preset.codigoProducto ||
+            '';
+
+        await buscarVariantesMovimiento(termino);
+
+        const variante = movementSearchResults.find(
+            item =>
+                Number(item.idProductoVariante) ===
+                Number(preset.idProductoVariante)
+        );
+
+        if (!variante) {
+            throw new Error(
+                'No fue posible localizar la variante de esta alerta en el catálogo de movimientos.'
+            );
+        }
+
+        agregarVarianteMovimiento(
+            Number(preset.idProductoVariante),
+            ''
+        );
+
+        document.querySelector(
+            `[data-movement-quantity="${Number(preset.idProductoVariante)}"]`
+        )?.focus();
+
+    } catch (error) {
+
+        showToast(
+            'No se pudo preparar la entrada',
+            error.message
+        );
+
+    }
 }
 
 function ocultarResultadosVariantes() {
@@ -1697,7 +2218,8 @@ async function buscarVariantesMovimiento(termino) {
     }
 }
 
-function agregarVarianteMovimiento(id) {
+function agregarVarianteMovimiento(id,
+    cantidadInicial = '1') {
 
     const variante = movementSearchResults.find(
         item => Number(item.idProductoVariante) === id
@@ -1716,14 +2238,10 @@ function agregarVarianteMovimiento(id) {
 
         ...variante,
 
-        cantidad: '1'
+        cantidad: String(cantidadInicial)
     });
 
-
     renderizarDetallesMovimiento();
-
-
-
     limpiarBusquedaVariantesMovimiento(true);
 }
 
@@ -1785,11 +2303,13 @@ function renderizarDetallesMovimiento() {
             const invalida =
                 !cantidadValida || nueva < 0;
 
-            const cantidadInput = esAjuste
-                ? (Number.isInteger(cantidad) ? cantidad : 1)
-                : (Number.isInteger(cantidad) && cantidad > 0
-                    ? cantidad
-                    : 1);
+            const cantidadInput = item.cantidad === ''
+                ? ''
+                : esAjuste
+                    ? (Number.isInteger(cantidad) ? cantidad : 1)
+                    : (Number.isInteger(cantidad) && cantidad > 0
+                        ? cantidad
+                        : 1);
 
             const signo = delta > 0 ? '+' : '';
 
@@ -4049,7 +4569,7 @@ function inicializarEventosConteoFisico() {
         });
 }
 
-function handleAction(action, id) {
+function handleAction(action, id, triggerButton) {
 
     switch (action) {
 
@@ -4073,6 +4593,8 @@ function handleAction(action, id) {
 
         case 'transfer':
             openModal('transfer');
+            transferPresetFromAlertPending = null;
+            transferPresetFromAlertActive = null;
             break;
 
         case 'barcode':
@@ -4118,6 +4640,30 @@ function handleAction(action, id) {
 
         case 'apply-count':
             aplicarConteoFisico(Number(id));
+            break;
+
+        case 'alert-entry':
+
+            movementPresetFromAlert = {
+                idProductoVariante: Number(id),
+                codigoBarras: triggerButton?.dataset.barcode || '',
+                codigoProducto: triggerButton?.dataset.productCode || ''
+            };
+
+            openModal('movement');
+
+            break;
+
+        case 'alert-transfer':
+
+            transferPresetFromAlertPending = {
+                idProductoVariante: Number(id),
+                codigoBarras: triggerButton?.dataset.barcode || '',
+                codigoProducto: triggerButton?.dataset.productCode || ''
+            };
+
+            openModal('transfer');
+
             break;
 
         default:
@@ -5637,12 +6183,12 @@ function filtrarTransferencias() {
 
 }
 
-
-
-
-
-
 async function prepararModalTransferencia() {
+
+    const preset = transferPresetFromAlertPending;
+
+    transferPresetFromAlertPending = null;
+    transferPresetFromAlertActive = preset;
 
     const selectOrigen =
         document.getElementById('transferOriginStore');
@@ -5662,7 +6208,6 @@ async function prepararModalTransferencia() {
     const saveButton =
         document.querySelector('[data-save-transfer]');
 
-
     transferDraft = {
         sucursalOrigenId: '',
         detalles: []
@@ -5673,116 +6218,165 @@ async function prepararModalTransferencia() {
     window.clearTimeout(transferSearchTimer);
 
     transferSearchRequest++;
-
+    transferPresetRequest++;
 
     if (selectOrigen) {
-
         selectOrigen.replaceChildren(
             new Option('Cargando sucursales...', '')
         );
 
         selectOrigen.disabled = true;
-
     }
-
 
     if (destino) {
-
-        destino.textContent =
-            'Consultando tu sucursal...';
-
+        destino.textContent = 'Consultando tu sucursal...';
     }
 
-
     if (search) {
-
         search.value = '';
-
         search.disabled = true;
 
         search.placeholder =
             'Primero selecciona una sucursal de origen...';
-
     }
-
 
     if (results) {
-
         results.replaceChildren();
-
         results.classList.add('hidden');
-
     }
 
+    if (observation) observation.value = '';
 
-    if (observation) {
-        observation.value = '';
-    }
-
-    if (saveButton) {
-        saveButton.disabled = true;
-    }
+    if (saveButton) saveButton.disabled = true;
 
     renderizarLineasTransferencia();
 
-
     try {
+
+
 
         transferContext = await transferenciaFetch(
             '/api/transferencias/contexto'
         );
 
-
         if (destino) {
-
             destino.textContent =
-
-                `${transferContext.sucursalActualNombre}
-                · ${transferContext.sucursalActualCiudad}`;
-
+                `${transferContext.sucursalActualNombre} · ${transferContext.sucursalActualCiudad}`;
         }
+
 
 
         if (selectOrigen) {
 
             selectOrigen.replaceChildren(
-
                 new Option(
                     'Selecciona la sucursal que despachará',
                     ''
                 )
-
             );
 
             (transferContext.sucursalesOrigen || [])
                 .forEach(sucursal => {
 
                     selectOrigen.add(
-
                         new Option(
-
                             `${sucursal.nombre} · ${sucursal.ciudad}`,
-
                             String(sucursal.idSucursal)
-
                         )
-
                     );
 
                 });
 
             selectOrigen.disabled = false;
-
-            selectOrigen.dispatchEvent(
-
-                new Event('change', {
-                    bubbles: true
-                })
-
-            );
-
         }
 
+
+
+
+        if (preset && selectOrigen) {
+
+            const disponibilidad = await transferenciaFetch(
+                `/api/transferencias/variantes/${encodeURIComponent(preset.idProductoVariante)}/sucursales-disponibles`
+            );
+
+            const sucursalesConStock =
+                Array.isArray(disponibilidad)
+                    ? disponibilidad
+                    : [];
+
+
+
+            sucursalesConStock.forEach(item => {
+
+                const opcion = [...selectOrigen.options].find(
+                    option =>
+                        Number(option.value) ===
+                        Number(item.idSucursal)
+                );
+
+                if (opcion) {
+
+                    opcion.textContent =
+                        `${item.nombreSucursal} · ${item.ciudad} · ${Number(item.existenciaDisponible) || 0} disponibles`;
+
+                }
+
+            });
+
+
+
+
+            const recomendada = sucursalesConStock[0];
+
+            if (recomendada) {
+
+                selectOrigen.value =
+                    String(recomendada.idSucursal);
+
+                transferDefaultSelectionInProgress = true;
+
+                selectOrigen.dispatchEvent(
+                    new Event('change', { bubbles: true })
+                );
+
+                transferDefaultSelectionInProgress = false;
+
+
+
+                await precargarVarianteTransferenciaDesdeAlerta(
+                    preset
+                );
+
+            } else {
+
+                transferPresetFromAlertActive = null;
+
+                transferDefaultSelectionInProgress = true;
+
+                selectOrigen.dispatchEvent(
+                    new Event('change', { bubbles: true })
+                );
+
+                transferDefaultSelectionInProgress = false;
+
+                showToast(
+                    'Sin existencias en otras sucursales',
+                    'No encontramos esta variante disponible para trasladar. Puedes elegir otra sucursal y consultar otras prendas.'
+                );
+
+            }
+
+        } else if (selectOrigen) {
+
+            transferDefaultSelectionInProgress = true;
+
+            selectOrigen.dispatchEvent(
+                new Event('change', { bubbles: true })
+            );
+
+            transferDefaultSelectionInProgress = false;
+
+        }
 
         if (!transferContext.sucursalesOrigen?.length) {
 
@@ -5795,70 +6389,54 @@ async function prepararModalTransferencia() {
 
     } catch (error) {
 
+        transferPresetFromAlertActive = null;
+        transferDefaultSelectionInProgress = false;
+
         console.error(
             'Error preparando transferencia:',
             error
         );
 
         if (destino) {
-
             destino.textContent =
                 'No fue posible consultar tu sucursal';
-
         }
 
         if (selectOrigen) {
 
             selectOrigen.replaceChildren(
-
                 new Option(
                     'No fue posible cargar sucursales',
                     ''
                 )
-
             );
 
             selectOrigen.disabled = true;
-
         }
 
         showToast(
             'No se pudo preparar la transferencia',
             error.message
         );
-
     }
-
 }
-
-
-
-
-
 
 function cambiarSucursalOrigenTransferencia(event) {
 
     const select =
-
         event?.target ||
-
         document.getElementById('transferOriginStore');
-
 
     if (!select) return;
 
-
     transferDraft.sucursalOrigenId = select.value;
 
-
     transferDraft.detalles = [];
-
     transferSearchResults = [];
 
     transferSearchRequest++;
 
     window.clearTimeout(transferSearchTimer);
-
 
     const search =
         document.getElementById('transferVariantSearch');
@@ -5866,39 +6444,97 @@ function cambiarSucursalOrigenTransferencia(event) {
     const results =
         document.getElementById('transferVariantResults');
 
-
     if (search) {
 
         search.value = '';
-
         search.disabled = !select.value;
 
         search.placeholder = select.value
-
             ? 'Busca por nombre, código de producto, talla o color...'
-
             : 'Primero selecciona una sucursal de origen...';
-
     }
-
 
     if (results) {
-
         results.replaceChildren();
-
         results.classList.add('hidden');
-
     }
-
 
     renderizarLineasTransferencia();
 
+
+
+
+    if (
+        !transferDefaultSelectionInProgress &&
+        transferPresetFromAlertActive &&
+        select.value
+    ) {
+
+        void precargarVarianteTransferenciaDesdeAlerta(
+            transferPresetFromAlertActive
+        );
+
+    }
 }
 
 
+async function precargarVarianteTransferenciaDesdeAlerta(preset) {
 
+    const origenId =
+        Number(transferDraft.sucursalOrigenId);
 
+    const search =
+        document.getElementById('transferVariantSearch');
 
+    const results =
+        document.getElementById('transferVariantResults');
+
+    if (!origenId || !search || !results) return;
+
+    const requestId = ++transferPresetRequest;
+
+    search.value =
+        preset.codigoBarras || preset.codigoProducto || '';
+
+    await buscarVariantesTransferencia(search.value);
+
+    if (requestId !== transferPresetRequest) return;
+
+    const variante = transferSearchResults.find(
+        item =>
+            Number(item.idProductoVariante) ===
+            Number(preset.idProductoVariante)
+    );
+
+    if (!variante) {
+
+        results.innerHTML = `
+            <div class="transfer-search-state">
+
+                <i class="fa-solid fa-triangle-exclamation"></i>
+
+                Esta variante no tiene existencias disponibles
+                en la sucursal seleccionada.
+
+                Elige otra sucursal o consulta otra prenda.
+
+            </div>
+        `;
+
+        results.classList.remove('hidden');
+
+        return;
+    }
+
+    agregarVarianteTransferencia(
+        Number(preset.idProductoVariante),
+        ''
+    );
+
+    document.querySelector(
+        `[data-transfer-quantity="${Number(preset.idProductoVariante)}"]`
+    )?.focus();
+}
 
 async function buscarVariantesTransferencia(termino) {
 
@@ -6068,12 +6704,7 @@ async function buscarVariantesTransferencia(termino) {
 
 }
 
-
-
-
-
-
-function agregarVarianteTransferencia(idVariante) {
+function agregarVarianteTransferencia(idVariante, cantidadInicial = 1) {
 
     const variante = transferSearchResults.find(
 
@@ -6099,10 +6730,9 @@ function agregarVarianteTransferencia(idVariante) {
 
         idProductoVariante: idVariante,
 
-        cantidad: 1
+        cantidad: cantidadInicial
 
     });
-
 
     const search =
         document.getElementById('transferVariantSearch');
@@ -6134,11 +6764,6 @@ function agregarVarianteTransferencia(idVariante) {
     search?.focus();
 
 }
-
-
-
-
-
 
 function renderizarLineasTransferencia() {
 
@@ -6914,11 +7539,6 @@ async function cargarDetalleTransferencia(id) {
 
 }
 
-
-
-
-
-
 async function ejecutarAccionTransferencia(
     accion,
     id
@@ -7051,6 +7671,9 @@ async function ejecutarAccionTransferencia(
 
         await cargarTransferencias();
 
+        if (accion === 'aprobar' || accion === 'recibir') {
+            void cargarAlertasStock();
+        }
 
         if (!document.querySelector(
             '[data-modal-content="detail-transfer"]'
@@ -7210,13 +7833,7 @@ function detenerLectorCamara(actualizarEstado = true) {
     }
 }
 
-
-
-
-
 let scannerAudioContext = null;
-let scannerReadTimer = null;
-
 
 function activarAudioLector() {
     try {
@@ -7426,10 +8043,6 @@ function mostrarResultadoEscaner({
 }
 
 function procesarCodigoBarras(codigoForzado = null) {
-    if (scannerReadTimer !== null) {
-        clearTimeout(scannerReadTimer);
-        scannerReadTimer = null;
-    }
 
     const input = document.getElementById('barcodeInput');
     if (!input) return;
@@ -7495,24 +8108,6 @@ function findBarcodeProduct() {
     procesarCodigoBarras();
 }
 
-function programarLecturaAutomatica() {
-    if (scannerReadTimer !== null) {
-        clearTimeout(scannerReadTimer);
-    }
-
-    const input = document.getElementById('barcodeInput');
-
-    if (!input || !input.value.trim()) return;
-
-
-
-
-    scannerReadTimer = window.setTimeout(() => {
-        scannerReadTimer = null;
-        procesarCodigoBarras();
-    }, 400);
-}
-
 document.addEventListener('click', async (event) => {
 
     if (event.target.closest('[data-count-create]')) {
@@ -7520,30 +8115,25 @@ document.addEventListener('click', async (event) => {
         return;
     }
 
-
     if (event.target.closest('[data-count-save-detail]')) {
         await guardarDetalleConteoFisico();
         return;
     }
-
 
     if (event.target.closest('[data-count-finalize]')) {
         await finalizarConteoFisico();
         return;
     }
 
-
     if (event.target.closest('[data-count-apply]')) {
         await aplicarConteoFisico();
         return;
     }
 
-
     if (event.target.closest('[data-count-reload]')) {
         await cargarConteosFisicos();
         return;
     }
-
 
     const pickCountVariant = event.target.closest(
         '[data-count-pick-variant]'
@@ -7556,7 +8146,6 @@ document.addEventListener('click', async (event) => {
         return;
     }
 
-
     const editCountVariant = event.target.closest(
         '[data-count-edit-variant]'
     );
@@ -7567,7 +8156,6 @@ document.addEventListener('click', async (event) => {
         );
         return;
     }
-
 
     if (event.target.closest('[data-count-cancel-selection]')) {
         limpiarEditorVarianteConteo();
@@ -7587,8 +8175,6 @@ document.addEventListener('click', async (event) => {
         return;
     }
 
-
-
     const addMovementVariantButton = event.target.closest(
         '[data-add-movement-variant]'
     );
@@ -7601,8 +8187,6 @@ document.addEventListener('click', async (event) => {
 
         return;
     }
-
-
 
     const removeMovementVariantButton = event.target.closest(
         '[data-remove-movement-variant]'
@@ -7638,7 +8222,7 @@ document.addEventListener('click', async (event) => {
 
     const actionButton = event.target.closest('[data-action]');
     if (actionButton) {
-        handleAction(actionButton.dataset.action, actionButton.dataset.id);
+        handleAction(actionButton.dataset.action, actionButton.dataset.id, actionButton);
         return;
     }
 
@@ -7767,10 +8351,6 @@ document.addEventListener('click', async (event) => {
         return;
     }
 
-
-
-
-
     if (event.target.closest('[data-save-transfer]')) {
 
         void guardarTransferencia();
@@ -7778,22 +8358,12 @@ document.addEventListener('click', async (event) => {
         return;
     }
 
-
-
-
-
-
     if (event.target.closest('[data-reload-transfers]')) {
 
         void cargarTransferencias();
 
         return;
     }
-
-
-
-
-
 
     const addTransferVariantButton = event.target.closest(
         '[data-add-transfer-variant]'
@@ -7807,11 +8377,6 @@ document.addEventListener('click', async (event) => {
 
         return;
     }
-
-
-
-
-
 
     const removeTransferVariantButton = event.target.closest(
         '[data-remove-transfer-variant]'
@@ -7841,6 +8406,30 @@ document.addEventListener('click', async (event) => {
     if (event.target.closest('[data-print]')) {
         closeModal();
         window.print();
+        return;
+    }
+
+    if (event.target.closest('[data-alert-reload]')) {
+        void cargarAlertasStock();
+        return;
+    }
+
+    if (event.target.closest('[data-alert-clear-filters]')) {
+
+        const search = document.getElementById('alertSearch');
+        const filter = document.getElementById('alertSeverityFilter');
+
+        if (search) search.value = '';
+
+        if (filter) {
+            filter.value = '';
+            filter.dispatchEvent(
+                new Event('change', { bubbles: true })
+            );
+        }
+
+        renderizarAlertasStock();
+
         return;
     }
 });
@@ -7913,6 +8502,11 @@ document.getElementById("typeFilter")
 
 document.addEventListener('anb:producto-guardado', () => {
     cargarInventario();
+    void cargarAlertasStock();
+});
+
+document.addEventListener('anb:movimiento-guardado', () => {
+    void cargarAlertasStock();
 });
 
 inicializarEncabezadoSesion();
@@ -7930,10 +8524,6 @@ document.getElementById('movementDateFilter').addEventListener('change', filterM
 document.getElementById('transferStatusFilter').addEventListener('change', () => filterCards('transferStatusFilter', '#transferCards [data-transfer-status]', 'transferStatus'));
 inicializarEventosConteoFisico();
 cargarConteosFisicos();
-
-document.getElementById('barcodeInput')
-    ?.addEventListener('input', programarLecturaAutomatica);
-
 
 document.getElementById('barcodeInput')
     ?.addEventListener('keydown', event => {
@@ -8031,6 +8621,14 @@ document.addEventListener('change', event => {
 
     if (!linea) return;
 
+    const valor = quantityInput.value.trim();
+
+    if (valor === '') {
+        linea.cantidad = '';
+        actualizarResumenTransferencia();
+        return;
+    }
+
     let cantidad = Number.parseInt(
         quantityInput.value,
         10
@@ -8111,13 +8709,29 @@ document.getElementById('transferVariantSearch')
     });
 
 document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+        void actualizarBadgeTransferencias();
+        void sincronizarBadgeAlertasStock();
+    }
+});
+
+
+window.setInterval(() => {
 
     if (!document.hidden) {
 
-        void actualizarBadgeTransferencias();
+        void sincronizarBadgeAlertasStock();
 
     }
 
-});
+}, 30000);
+
+document.getElementById('alertSearch')
+    ?.addEventListener('input', renderizarAlertasStock);
+
+document.getElementById('alertSeverityFilter')
+    ?.addEventListener('change', renderizarAlertasStock);
+
+void cargarAlertasStock();
 
 setView('dashboard');

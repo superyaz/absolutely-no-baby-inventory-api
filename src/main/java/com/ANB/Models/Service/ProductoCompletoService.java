@@ -226,6 +226,8 @@ public class ProductoCompletoService {
                                                 ? producto.getStock()
                                                 : 0);
 
+                inventario.setStockMinimo(3);
+
                 inventario.setFechaActualizacion(
                                 LocalDateTime.now());
 

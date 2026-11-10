@@ -492,6 +492,7 @@ public class RegistrarMovimientoService {
                 inventario.setSucursal(sucursal);
                 inventario.setProductoVariante(variante);
                 inventario.setCantidad(0);
+                inventario.setStockMinimo(3);
                 inventario.setFechaActualizacion(LocalDateTime.now());
 
                 return inventario;

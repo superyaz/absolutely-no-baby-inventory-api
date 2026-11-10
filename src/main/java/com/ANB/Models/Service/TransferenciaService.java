@@ -8,6 +8,7 @@ import com.ANB.Models.DTO.TransferenciaContextoDTO;
 import com.ANB.Models.DTO.TransferenciaDTO;
 import com.ANB.Models.DTO.TransferenciaDetalleDTO;
 import com.ANB.Models.DTO.TransferenciaVarianteDTO;
+import com.ANB.Models.DTO.DisponibilidadVarianteSucursalDTO;
 
 import com.ANB.Models.Entity.*;
 import com.ANB.Models.Repository.*;
@@ -522,6 +523,53 @@ public class TransferenciaService {
                 return convertirDTO(
                                 guardada,
                                 responsable.getSucursal().getIdSucursal());
+        }
+
+        @Transactional(readOnly = true)
+        public List<DisponibilidadVarianteSucursalDTO> listarSucursalesDisponibles(
+                        Long usuarioId,
+                        Long varianteId) {
+
+                Usuario usuario = obtenerUsuarioActivo(usuarioId);
+
+                ProductoVariante variante = obtenerVarianteActiva(varianteId);
+
+                Long sucursalDestinoId = usuario.getSucursal().getIdSucursal();
+
+                return inventarioRepository
+                                .findByProductoVariante_IdProductoVariante(
+                                                variante.getIdProductoVariante())
+
+                                .stream()
+
+                                .filter(inventario -> inventario.getSucursal() != null)
+
+                                .filter(inventario -> Boolean.TRUE.equals(
+                                                inventario.getSucursal().getActivo()))
+
+                                .filter(inventario -> !sucursalDestinoId.equals(
+                                                inventario.getSucursal().getIdSucursal()))
+
+                                .map(inventario -> new DisponibilidadVarianteSucursalDTO(
+                                                inventario.getSucursal().getIdSucursal(),
+                                                inventario.getSucursal().getNombre(),
+                                                inventario.getSucursal().getCiudad(),
+                                                inventario.getCantidad() == null
+                                                                ? 0
+                                                                : inventario.getCantidad()))
+
+                                .filter(item -> item.existenciaDisponible() > 0)
+
+                                .sorted(
+                                                Comparator
+                                                                .comparingInt(
+                                                                                DisponibilidadVarianteSucursalDTO::existenciaDisponible)
+                                                                .reversed()
+                                                                .thenComparing(
+                                                                                DisponibilidadVarianteSucursalDTO::nombreSucursal,
+                                                                                String.CASE_INSENSITIVE_ORDER))
+
+                                .toList();
         }
 
         @Transactional(readOnly = true)

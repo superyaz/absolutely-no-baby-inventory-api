@@ -193,7 +193,17 @@
             Conteo Físico
           </button>
           <button class="nav-tab" type="button" data-view="alerts">
-            Alertas Stock <span class="badge red">3</span>
+            Alertas Stock
+
+            <span
+              class="badge red hidden"
+              id="stockAlertNavBadge"
+              aria-live="polite"
+              aria-label="0 productos con alerta de stock bajo"
+              title="Productos con stock bajo en la sucursal activa"
+            >
+              0
+            </span>
           </button>
         </nav>
       </header>
@@ -778,113 +788,154 @@
         </section>
 
         <section class="view" data-section="alerts">
-          <div class="toolbar">
-            <div>
-              <div class="eyebrow">Absolutely No Baby · Inventario</div>
-              <h1 class="page-title">Alertas Stock</h1>
-              <div class="subtle">
-                Referencias que alcanzaron o están por debajo del mínimo
-                configurado.
-              </div>
-            </div>
-          </div>
-          <div class="stats">
-            <div class="stat">
-              <div class="stat-head">
-                <span>SKUs en alerta</span
-                ><span class="stat-icon"
-                  ><i class="fa-solid fa-triangle-exclamation"></i
-                ></span>
-              </div>
-              <div class="stat-value">2</div>
-              <div class="stat-foot">requieren atención</div>
-            </div>
-            <div class="stat">
-              <div class="stat-head">
-                <span>Unidades críticas</span
-                ><span class="stat-icon"
-                  ><i class="fa-solid fa-boxes-stacked" aria-hidden="true"></i
-                ></span>
-              </div>
-              <div class="stat-value">10</div>
-              <div class="stat-foot">stock actual</div>
-            </div>
-            <div class="stat">
-              <div class="stat-head">
-                <span>Tienda activa</span
-                ><span class="stat-icon"
-                  ><i class="fa-solid fa-store" aria-hidden="true"></i
-                ></span>
-              </div>
-              <div class="stat-value" style="font-size: 17px" data-store-name>
-                Medellín Centro
-              </div>
-              <div class="stat-foot" data-store-municipality>Medellín</div>
-            </div>
-          </div>
-          <div class="alert-card">
-            <div class="alert-left">
-              <div class="alert-icon">
-                <i
-                  class="fa-solid fa-triangle-exclamation"
-                  aria-hidden="true"
-                ></i>
-              </div>
-              <div>
-                <div>
-                  <span class="mono pill red">4206021</span>
-                  <b>Vestido Mini Riot</b>
-                </div>
-                <div class="subtle" style="margin-top: 5px">
-                  Talla: <b style="color: #ddd">2T · 3T · 4T</b> · Color:
-                  <b style="color: #ddd">Negro Profundo</b> · Halloween 2026
-                </div>
-                <div style="margin-top: 9px">
-                  <span class="status-dot red"></span>Stock
-                  <b style="color: #d94e45">6</b> / mínimo <b>8</b>
+          <div class="alerts-page">
+            <header class="alerts-heading">
+              <div class="alerts-heading-copy">
+                <span class="alerts-eyebrow">
+                  ABSOLUTELY NO BABY · ANB PREMIUM
+                </span>
+
+                <h1 class="page-title">Alertas de stock</h1>
+
+                <p class="alerts-subtitle">
+                  Anticipa faltantes y repón cada variante según las existencias
+                  reales de tu sucursal.
+                </p>
+
+                <div class="alerts-branch-context">
+                  <span class="alerts-live-indicator"></span>
+
+                  <span>
+                    Sucursal activa ·
+                    <strong id="alertsBranchName"> Consultando... </strong>
+                  </span>
                 </div>
               </div>
-            </div>
-            <div class="actions">
-              <button class="btn" type="button" data-action="transfer">
-                <i class="fa-solid fa-right-left" aria-hidden="true"></i>
-                Trasladar</button
-              ><button class="btn btn-red" type="button" data-action="movement">
-                <i class="fa-solid fa-plus" aria-hidden="true"></i>
-                Entrada
+
+              <button
+                class="btn alerts-refresh-button"
+                type="button"
+                data-alert-reload
+              >
+                <i class="fa-solid fa-rotate"></i>
+                Actualizar alertas
               </button>
+            </header>
+
+            <div class="alerts-metric-grid">
+              <article class="alerts-metric-card">
+                <span class="alerts-metric-icon is-warning">
+                  <i class="fa-solid fa-triangle-exclamation"></i>
+                </span>
+
+                <span class="alerts-metric-label"> Variantes en alerta </span>
+
+                <strong id="alertMetricVariants">--</strong>
+
+                <small> Igual o por debajo del mínimo </small>
+              </article>
+
+              <article class="alerts-metric-card">
+                <span class="alerts-metric-icon is-primary">
+                  <i class="fa-solid fa-boxes-stacked"></i>
+                </span>
+
+                <span class="alerts-metric-label"> Unidades actuales </span>
+
+                <strong id="alertMetricUnits">--</strong>
+
+                <small> Unidades disponibles en alerta </small>
+              </article>
+
+              <article class="alerts-metric-card">
+                <span class="alerts-metric-icon is-critical">
+                  <i class="fa-solid fa-box-open"></i>
+                </span>
+
+                <span class="alerts-metric-label"> Variantes agotadas </span>
+
+                <strong id="alertMetricOutOfStock">--</strong>
+
+                <small> Sin unidades en la sucursal </small>
+              </article>
+
+              <article class="alerts-metric-card">
+                <span class="alerts-metric-icon is-info">
+                  <i class="fa-solid fa-arrow-trend-up"></i>
+                </span>
+
+                <span class="alerts-metric-label"> Para llegar al mínimo </span>
+
+                <strong id="alertMetricMissing">--</strong>
+
+                <small> Unidades de reposición sugeridas </small>
+              </article>
             </div>
-          </div>
-          <div class="alert-card">
-            <div class="alert-left">
-              <div class="alert-icon">
-                <i
-                  class="fa-solid fa-triangle-exclamation"
-                  aria-hidden="true"
-                ></i>
-              </div>
-              <div>
+
+            <section class="alerts-list-panel">
+              <div class="alerts-list-toolbar">
                 <div>
-                  <span class="mono pill red">4102034</span>
-                  <b>Camisa Denim Baby</b>
+                  <span class="alerts-section-kicker">
+                    SEGUIMIENTO DE EXISTENCIAS
+                  </span>
+
+                  <h2>Variantes que requieren atención</h2>
+
+                  <p>
+                    Selecciona una prenda para registrar una entrada o
+                    solicitarla a otra sucursal.
+                  </p>
                 </div>
-                <div class="subtle" style="margin-top: 5px">
-                  Talla: <b style="color: #ddd">2T · 3T · 4T</b> · Color:
-                  <b style="color: #ddd">Azul Marino</b> · Básicos
-                </div>
-                <div style="margin-top: 9px">
-                  <span class="status-dot red"></span>Stock
-                  <b style="color: #d94e45">4</b> / mínimo <b>5</b>
+
+                <div class="alerts-list-controls">
+                  <label class="alerts-search-field" for="alertSearch">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+
+                    <input
+                      class="input"
+                      id="alertSearch"
+                      type="search"
+                      placeholder="Buscar prenda, código, talla o color..."
+                      autocomplete="off"
+                    />
+                  </label>
+
+                  <div class="alerts-filter-field">
+                    <select
+                      class="select"
+                      id="alertSeverityFilter"
+                      aria-label="Filtrar alertas"
+                    >
+                      <option value="">Todas las alertas</option>
+
+                      <option value="AGOTADO">Agotadas</option>
+
+                      <option value="BAJO">Bajo mínimo</option>
+                    </select>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div class="actions">
-              <button class="btn" type="button" data-action="transfer">
-                ↔ Trasladar</button
-              ><button class="btn btn-red" type="button" data-action="movement">
-                ＋ Entrada
-              </button>
-            </div>
+
+              <div class="alerts-grid" id="alertCards" aria-live="polite">
+                <div class="alerts-loading">
+                  <i class="fa-solid fa-circle-notch fa-spin"></i>
+
+                  <span> Consultando existencias de tu sucursal... </span>
+                </div>
+              </div>
+
+              <div class="alerts-footnote">
+                <i class="fa-solid fa-shield-halved"></i>
+
+                <span>
+                  Los niveles se calculan por variante y sucursal usando la
+                  tabla <strong>inventario</strong>. Las entradas actualizan
+                  existencias al confirmar el movimiento; las transferencias
+                  solo descuentan stock cuando la sucursal de origen las
+                  aprueba.
+                </span>
+              </div>
+            </section>
           </div>
         </section>
       </main>
