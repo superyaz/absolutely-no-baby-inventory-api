@@ -12,18 +12,21 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface InventarioRepository
-        extends JpaRepository<Inventario, Long> {
+                extends JpaRepository<Inventario, Long> {
 
-    List<Inventario> findBySucursal_IdSucursal(Long sucursalId);
+        List<Inventario> findBySucursal_IdSucursal(Long sucursalId);
 
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("""
-                SELECT i
-                FROM Inventario i
-                WHERE i.sucursal.idSucursal = :sucursalId
-                AND i.productoVariante.idProductoVariante = :varianteId
-            """)
-    Optional<Inventario> buscarParaActualizar(
-            @Param("sucursalId") Long sucursalId,
-            @Param("varianteId") Long varianteId);
+        @Lock(LockModeType.PESSIMISTIC_WRITE)
+        @Query("""
+                            SELECT i
+                            FROM Inventario i
+                            WHERE i.sucursal.idSucursal = :sucursalId
+                            AND i.productoVariante.idProductoVariante = :varianteId
+                        """)
+        Optional<Inventario> buscarParaActualizar(
+                        @Param("sucursalId") Long sucursalId,
+                        @Param("varianteId") Long varianteId);
+
+        List<Inventario> findByProductoVariante_IdProductoVariante(
+                        Long varianteId);
 }

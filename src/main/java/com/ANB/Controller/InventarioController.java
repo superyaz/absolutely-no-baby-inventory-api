@@ -2,6 +2,8 @@ package com.ANB.Controller;
 
 import com.ANB.Models.Entity.Inventario;
 import com.ANB.Models.Service.InventarioService;
+import com.ANB.Models.DTO.AlertaStockDTO;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.HttpStatus;
@@ -33,6 +35,15 @@ public class InventarioController {
     @GetMapping("/{id}")
     public Inventario obtener(@PathVariable Long id) {
         return service.findById(id);
+    }
+
+    @GetMapping("/alertas-stock")
+    public List<AlertaStockDTO> listarAlertasStock(
+            HttpSession session) {
+
+        Long usuarioId = AuthController.obtenerUsuarioId(session);
+
+        return service.listarAlertasStock(usuarioId);
     }
 
     @PostMapping

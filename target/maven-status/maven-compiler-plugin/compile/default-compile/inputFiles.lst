@@ -5,7 +5,6 @@ C:\Users\MI PC\Desktop\absolutely-no-baby-inventory-api\src\main\java\com\ANB\Co
 C:\Users\MI PC\Desktop\absolutely-no-baby-inventory-api\src\main\java\com\ANB\Controller\AuditoriaController.java
 C:\Users\MI PC\Desktop\absolutely-no-baby-inventory-api\src\main\java\com\ANB\Controller\AuthController.java
 C:\Users\MI PC\Desktop\absolutely-no-baby-inventory-api\src\main\java\com\ANB\Controller\ConteoFisicoController.java
-C:\Users\MI PC\Desktop\absolutely-no-baby-inventory-api\src\main\java\com\ANB\Controller\DetalleConteoController.java
 C:\Users\MI PC\Desktop\absolutely-no-baby-inventory-api\src\main\java\com\ANB\Controller\DetalleMovimientoController.java
 C:\Users\MI PC\Desktop\absolutely-no-baby-inventory-api\src\main\java\com\ANB\Controller\GrupoProductoController.java
 C:\Users\MI PC\Desktop\absolutely-no-baby-inventory-api\src\main\java\com\ANB\Controller\HomeController.java
@@ -23,7 +22,10 @@ C:\Users\MI PC\Desktop\absolutely-no-baby-inventory-api\src\main\java\com\ANB\Co
 C:\Users\MI PC\Desktop\absolutely-no-baby-inventory-api\src\main\java\com\ANB\Controller\TipoProductoController.java
 C:\Users\MI PC\Desktop\absolutely-no-baby-inventory-api\src\main\java\com\ANB\Controller\TransferenciaController.java
 C:\Users\MI PC\Desktop\absolutely-no-baby-inventory-api\src\main\java\com\ANB\Controller\UsuarioController.java
+C:\Users\MI PC\Desktop\absolutely-no-baby-inventory-api\src\main\java\com\ANB\Models\DTO\AlertaStockDTO.java
+C:\Users\MI PC\Desktop\absolutely-no-baby-inventory-api\src\main\java\com\ANB\Models\DTO\ConteoFisicoDTO.java
 C:\Users\MI PC\Desktop\absolutely-no-baby-inventory-api\src\main\java\com\ANB\Models\DTO\CrearTransferenciaRequest.java
+C:\Users\MI PC\Desktop\absolutely-no-baby-inventory-api\src\main\java\com\ANB\Models\DTO\DisponibilidadVarianteSucursalDTO.java
 C:\Users\MI PC\Desktop\absolutely-no-baby-inventory-api\src\main\java\com\ANB\Models\DTO\LoginRequest.java
 C:\Users\MI PC\Desktop\absolutely-no-baby-inventory-api\src\main\java\com\ANB\Models\DTO\MovimientoHistorialDTO.java
 C:\Users\MI PC\Desktop\absolutely-no-baby-inventory-api\src\main\java\com\ANB\Models\DTO\MovimientoVarianteDTO.java

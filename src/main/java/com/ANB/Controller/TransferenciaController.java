@@ -5,6 +5,7 @@ import com.ANB.Models.DTO.RechazarTransferenciaRequest;
 import com.ANB.Models.DTO.TransferenciaContextoDTO;
 import com.ANB.Models.DTO.TransferenciaDTO;
 import com.ANB.Models.DTO.TransferenciaVarianteDTO;
+import com.ANB.Models.DTO.DisponibilidadVarianteSucursalDTO;
 
 import com.ANB.Models.Service.TransferenciaService;
 
@@ -54,6 +55,18 @@ public class TransferenciaController {
                 usuarioId,
                 sucursalOrigenId,
                 q);
+    }
+
+    @GetMapping("/variantes/{varianteId}/sucursales-disponibles")
+    public List<DisponibilidadVarianteSucursalDTO> listarSucursalesDisponibles(
+            @PathVariable Long varianteId,
+            HttpSession session) {
+
+        Long usuarioId = AuthController.obtenerUsuarioId(session);
+
+        return service.listarSucursalesDisponibles(
+                usuarioId,
+                varianteId);
     }
 
     @GetMapping

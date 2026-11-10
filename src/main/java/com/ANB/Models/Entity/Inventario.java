@@ -19,6 +19,10 @@ public class Inventario {
     @Column(name = "cantidad", nullable = false)
     private Integer cantidad;
 
+    @PositiveOrZero
+    @Column(name = "stock_minimo", nullable = false, columnDefinition = "INT NOT NULL DEFAULT 5")
+    private Integer stockMinimo = 3;
+
     @Column(name = "fecha_actualizacion", nullable = false)
     private LocalDateTime fechaActualizacion;
 
@@ -47,6 +51,14 @@ public class Inventario {
 
     public void setCantidad(Integer cantidad) {
         this.cantidad = cantidad;
+    }
+
+    public Integer getStockMinimo() {
+        return stockMinimo;
+    }
+
+    public void setStockMinimo(Integer stockMinimo) {
+        this.stockMinimo = stockMinimo;
     }
 
     public LocalDateTime getFechaActualizacion() {
