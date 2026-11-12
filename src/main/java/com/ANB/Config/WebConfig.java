@@ -9,19 +9,27 @@ public class WebConfig implements WebMvcConfigurer {
 
     private final ApiSessionInterceptor apiSessionInterceptor;
 
+    private final AdminUsuarioInterceptor adminUsuarioInterceptor;
+
     public WebConfig(
-            ApiSessionInterceptor apiSessionInterceptor) {
+            ApiSessionInterceptor apiSessionInterceptor,
+            AdminUsuarioInterceptor adminUsuarioInterceptor) {
 
         this.apiSessionInterceptor = apiSessionInterceptor;
+        this.adminUsuarioInterceptor = adminUsuarioInterceptor;
     }
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
 
         registry.addInterceptor(apiSessionInterceptor)
-
                 .addPathPatterns("/api/**")
-
                 .excludePathPatterns("/api/auth/login");
+
+        registry.addInterceptor(adminUsuarioInterceptor)
+                .addPathPatterns(
+                        "/api/usuarios/**",
+                        "/api/roles/**",
+                        "/api/sucursales/**");
     }
 }

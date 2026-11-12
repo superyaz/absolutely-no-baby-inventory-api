@@ -4,6 +4,7 @@ import com.ANB.Models.Entity.Usuario;
 import com.ANB.Models.Service.UsuarioService;
 import jakarta.validation.Valid;
 import java.util.List;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -47,7 +48,12 @@ public class UsuarioController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void eliminar(@PathVariable Long id) {
-        service.delete(id);
+    public void eliminar(
+            @PathVariable Long id,
+            HttpSession session) {
+
+        Long usuarioSolicitante = AuthController.obtenerUsuarioId(session);
+
+        service.eliminarUsuario(id, usuarioSolicitante);
     }
 }
