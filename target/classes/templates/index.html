@@ -31,9 +31,7 @@
               ><small>SISTEMA GESTIÓN · INVENTARIO</small></span
             >
           </button>
-
           <div class="sync-pill"><i></i><span>↯</span> Sync Aburrá En Vivo</div>
-
           <div class="header-actions">
             <button
               class="theme-toggle"
@@ -63,34 +61,27 @@
                 aria-controls="storeMenu"
               >
                 <i class="fa-solid fa-store" aria-hidden="true"></i>
-
                 <span>
                   <small>PUNTO DE VENTA</small>
                   <b id="currentStore">Consultando...</b>
                 </span>
-
                 <i
                   class="fa-solid fa-chevron-down dropdown-arrow"
                   aria-hidden="true"
                 ></i>
               </button>
-
               <div class="dropdown store-menu" id="storeMenu">
                 <div class="drop-title">Sucursal de tu sesión</div>
-
                 <div class="store-menu-current">
                   <span class="store-menu-icon">
                     <i class="fa-solid fa-store"></i>
                   </span>
-
                   <span class="store-menu-copy">
                     <b id="storeMenuName">Consultando...</b>
                     <small id="storeMenuCity">Verificando asignación</small>
                   </span>
-
                   <span class="drop-tag"> ASIGNADA </span>
                 </div>
-
                 <div class="store-menu-note">
                   <i class="fa-solid fa-lock"></i>
                   El punto de venta está vinculado a tu cuenta.
@@ -106,52 +97,40 @@
                 aria-controls="userMenu"
               >
                 <span class="avatar" id="userAvatar"> U </span>
-
                 <span class="user-copy">
                   <b id="currentUserName">Consultando...</b>
                   <small id="currentUserRole">Verificando cuenta</small>
                 </span>
-
                 <i
                   class="fa-solid fa-chevron-down dropdown-arrow"
                   aria-hidden="true"
                 ></i>
               </button>
-
               <div class="dropdown user-menu" id="userMenu">
                 <div class="drop-title">Cuenta autenticada</div>
-
                 <div class="user-menu-profile">
                   <span class="avatar user-menu-avatar" id="userMenuAvatar">
                     U
                   </span>
-
                   <div class="user-menu-copy">
                     <b id="userMenuName">Consultando...</b>
-
                     <small id="userMenuEmail"> Verificando correo </small>
-
                     <span class="drop-tag" id="userMenuRole"> USUARIO </span>
                   </div>
                 </div>
-
                 <div class="user-menu-branch">
                   <i class="fa-solid fa-store"></i>
-
                   <span>
                     <small>Trabajando en</small>
                     <b id="userMenuStore">Consultando sucursal...</b>
                   </span>
                 </div>
-
                 <div class="dropdown-divider"></div>
-
                 <button class="logout-menu-item" id="logoutBtn" type="button">
                   <span>
                     <b>Cerrar sesión</b>
                     <small>Salir de tu cuenta de forma segura</small>
                   </span>
-
                   <i class="fa-solid fa-right-from-bracket"></i>
                 </button>
               </div>
@@ -169,15 +148,35 @@
         </div>
         <nav class="nav-tabs" id="navTabs" aria-label="Navegación principal">
           <button class="nav-tab active" type="button" data-view="dashboard">
+            <i class="fa-solid fa-house" aria-hidden="true"></i>
             Dashboard
           </button>
+          <button
+            class="nav-tab hidden"
+            id="usersNavTab"
+            type="button"
+            data-view="users"
+          >
+            <i class="fa-solid fa-users" aria-hidden="true"></i>
+            Administración de Usuarios
+          </button>
+          <button class="nav-tab" type="button" data-view="seasons">
+            <i class="fa-solid fa-calendar-days" aria-hidden="true"></i>
+            Temporadas &amp; Colecciones
+          </button>
           <button class="nav-tab" type="button" data-view="inventory">
+            <i class="fa-solid fa-boxes-stacked" aria-hidden="true"></i>
             Inventario &amp; Tallas
           </button>
           <button class="nav-tab" type="button" data-view="movements">
+            <i
+              class="fa-solid fa-arrow-right-arrow-left"
+              aria-hidden="true"
+            ></i>
             Entradas &amp; Salidas
           </button>
           <button class="nav-tab" type="button" data-view="transfers">
+            <i class="fa-solid fa-truck-fast" aria-hidden="true"></i>
             Transferencias
             <span
               class="badge red hidden"
@@ -190,24 +189,24 @@
             </span>
           </button>
           <button class="nav-tab" type="button" data-view="counts">
+            <i class="fa-solid fa-clipboard-check" aria-hidden="true"></i>
             Conteo Físico
           </button>
           <button class="nav-tab" type="button" data-view="alerts">
+            <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
             Alertas Stock
-
             <span
               class="badge red hidden"
               id="stockAlertNavBadge"
               aria-live="polite"
               aria-label="0 productos con alerta de stock bajo"
-              title="Productos con stock bajo en la sucursal activa"
+              title="Productos con stock bajo"
             >
               0
             </span>
           </button>
         </nav>
       </header>
-
       <main class="main" id="main">
         <section class="view active" data-section="dashboard">
           <div class="hero">
@@ -224,23 +223,19 @@
               puntos de venta del Valle de Aburrá. Todo movimiento queda trazado
               por usuario, tienda y producto.
             </p>
-
             <div class="hero-actions">
               <button class="btn btn-red" type="button" data-action="barcode">
                 <i class="fa-solid fa-barcode" aria-hidden="true"></i>
                 Escanear producto
               </button>
-
               <button class="btn" type="button" data-action="new">
                 <i class="fa-solid fa-plus" aria-hidden="true"></i>
                 Nueva prenda (8D)
               </button>
-
               <button class="btn" type="button" data-view="transfers">
                 <i class="fa-solid fa-right-left" aria-hidden="true"></i>
                 Gestionar transferencias
               </button>
-
               <button class="btn" type="button" data-view="alerts">
                 <i
                   class="fa-solid fa-triangle-exclamation"
@@ -250,50 +245,56 @@
               </button>
             </div>
           </div>
-
-          <div class="stats">
+          <div class="stats dashboard-kpi-grid">
             <div class="stat">
               <div class="stat-head">
-                <span>Existencias actuales</span
-                ><span class="stat-icon">
+                <span>Existencias actuales</span>
+                <span class="stat-icon">
                   <i class="fa-solid fa-boxes-stacked"></i>
                 </span>
               </div>
-              <div class="stat-value">101</div>
-              <div class="stat-foot">unids. · +8.4% vs. mes anterior</div>
+              <div class="stat-value" id="dashboardStockUnits">—</div>
+              <div class="stat-foot" id="dashboardStockFoot">
+                Consultando existencias...
+              </div>
             </div>
             <div class="stat">
               <div class="stat-head">
-                <span>Valor inventario</span
-                ><span class="stat-icon">
+                <span>Valor comercial</span>
+                <span class="stat-icon">
                   <i class="fa-solid fa-sack-dollar"></i>
                 </span>
               </div>
-              <div class="stat-value">$ 12.480.000</div>
-              <div class="stat-foot">COP · Costo estimado</div>
+              <div class="stat-value" id="dashboardInventoryValue">—</div>
+              <div class="stat-foot" id="dashboardValueFoot">
+                Calculando valor del inventario...
+              </div>
             </div>
             <div class="stat">
               <div class="stat-head">
-                <span>Alertas de stock</span
-                ><span class="stat-icon warning">
+                <span>Alertas de stock</span>
+                <span class="stat-icon warning">
                   <i class="fa-solid fa-triangle-exclamation"></i>
                 </span>
               </div>
-              <div class="stat-value">3</div>
-              <div class="stat-foot">SKUs · Requieren atención</div>
+              <div class="stat-value" id="dashboardStockAlerts">—</div>
+              <div class="stat-foot" id="dashboardAlertsFoot">
+                Consultando productos alertados...
+              </div>
             </div>
             <div class="stat">
               <div class="stat-head">
-                <span>Transferencias pendientes</span
-                ><span class="stat-icon">
+                <span>Transferencias pendientes</span>
+                <span class="stat-icon">
                   <i class="fa-solid fa-truck-fast"></i>
                 </span>
               </div>
-              <div class="stat-value">2</div>
-              <div class="stat-foot">activas · 1 en tránsito</div>
+              <div class="stat-value" id="dashboardPendingTransfers">—</div>
+              <div class="stat-foot" id="dashboardTransfersFoot">
+                Consultando transferencias...
+              </div>
             </div>
           </div>
-
           <div class="grid-2">
             <div class="card">
               <div class="card-head">
@@ -303,62 +304,10 @@
                 </button>
               </div>
               <div class="card-body">
-                <div class="list">
-                  <div class="list-row">
-                    <div class="list-main">
-                      <strong>Camiseta Básica Rebel</strong
-                      ><small
-                        ><span class="mono">3103015</span> · Medellín Centro ·
-                        06 Oct 2026 · 14:32</small
-                      >
-                    </div>
-                    <div class="value-right">
-                      <span class="pill green">ENTRADA</span><br /><span
-                        style="color: #eee"
-                        >24 unid.</span
-                      >
-                    </div>
-                  </div>
-                  <div class="list-row">
-                    <div class="list-main">
-                      <strong>Vestido Mini Riot</strong
-                      ><small
-                        ><span class="mono">4206021</span> · Bello · 06 Oct 2026
-                        · 13:05</small
-                      >
-                    </div>
-                    <div class="value-right">
-                      <span class="pill red">SALIDA VENTA</span><br /><span
-                        style="color: #eee"
-                        >2 unid.</span
-                      >
-                    </div>
-                  </div>
-                  <div class="list-row">
-                    <div class="list-main">
-                      <strong>Pantalón Cargo Kids</strong
-                      ><small
-                        ><span class="mono">5104087</span> · CEDI Aburrá · 06
-                        Oct 2026 · 11:48</small
-                      >
-                    </div>
-                    <div class="value-right">
-                      <span class="pill amber">TRANSFERENCIA SALIDA</span
-                      ><br /><span style="color: #eee">4 unid.</span>
-                    </div>
-                  </div>
-                  <div class="list-row">
-                    <div class="list-main">
-                      <strong>Camisa Denim Baby</strong
-                      ><small
-                        ><span class="mono">4102034</span> · Medellín Centro ·
-                        05 Oct 2026 · 17:21</small
-                      >
-                    </div>
-                    <div class="value-right">
-                      <span class="pill red">AJUSTE CONTEO NEGATIVO</span
-                      ><br /><span style="color: #eee">1 unid.</span>
-                    </div>
+                <div class="list" id="dashboardRecentMovements">
+                  <div class="dashboard-recent-empty">
+                    <i class="fa-solid fa-spinner fa-spin"></i>
+                    <span>Consultando movimientos de tu sucursal...</span>
                   </div>
                 </div>
               </div>
@@ -399,12 +348,37 @@
                       Conteo físico</strong
                     ><span>Conciliar físico contra sistema.</span>
                   </button>
+                  <button class="quick" type="button" data-view="seasons">
+                    <strong>
+                      <i
+                        class="fa-solid fa-calendar-days"
+                        aria-hidden="true"
+                      ></i>
+                      Temporadas &amp; Colecciones
+                    </strong>
+                    <span>
+                      Crear campañas, festividades y colecciones especiales.
+                    </span>
+                  </button>
+                  <button
+                    class="quick hidden"
+                    id="usersQuickAction"
+                    type="button"
+                    data-view="users"
+                  >
+                    <strong>
+                      <i class="fa-solid fa-users" aria-hidden="true"></i>
+                      Administración de Usuarios
+                    </strong>
+                    <span>
+                      Crear cuentas, asignar roles y administrar accesos.
+                    </span>
+                  </button>
                 </div>
               </div>
             </div>
           </div>
         </section>
-
         <section class="view" data-section="inventory">
           <div class="toolbar">
             <div>
@@ -425,15 +399,12 @@
                     id="inventorySearch"
                     placeholder="Buscar código, nombre o color…"
                   />
-
                   <select class="select" id="sizeFilter">
                     <option value="">Todas las tallas</option>
                   </select>
-
                   <select class="select" id="groupFilter">
                     <option value="">Todos los grupos</option>
                   </select>
-
                   <select class="select" id="typeFilter">
                     <option value="">Todos los tipos</option>
                   </select>
@@ -466,7 +437,230 @@
             </div>
           </div>
         </section>
-
+        <section class="view" data-section="seasons">
+          <div class="toolbar season-page-heading">
+            <div>
+              <div class="eyebrow">Absolutely No Baby · Catálogo</div>
+              <h1 class="page-title">Temporadas &amp; Colecciones</h1>
+              <div class="subtle">
+                Gestiona las campañas, colaboraciones y colecciones que
+                identifican tus prendas.
+              </div>
+            </div>
+            <button class="btn btn-red" type="button" data-season-new>
+              <i class="fa-solid fa-plus"></i>
+              Nueva temporada
+            </button>
+          </div>
+          <div class="stats season-stats">
+            <div class="stat">
+              <div class="stat-head">
+                Total registradas
+                <span class="stat-icon">
+                  <i class="fa-solid fa-layer-group"></i>
+                </span>
+              </div>
+              <div class="stat-value" id="seasonTotalCount">0</div>
+              <div class="stat-foot">Temporadas y colecciones</div>
+            </div>
+            <div class="stat">
+              <div class="stat-head">
+                Activas
+                <span class="stat-icon">
+                  <i class="fa-solid fa-circle-check"></i>
+                </span>
+              </div>
+              <div class="stat-value" id="seasonActiveCount">0</div>
+              <div class="stat-foot">Disponibles para nuevos productos</div>
+            </div>
+            <div class="stat">
+              <div class="stat-head">
+                Campañas y colecciones
+                <span class="stat-icon">
+                  <i class="fa-solid fa-wand-magic-sparkles"></i>
+                </span>
+              </div>
+              <div class="stat-value" id="seasonCampaignCount">0</div>
+              <div class="stat-foot">Ediciones especiales</div>
+            </div>
+            <div class="stat">
+              <div class="stat-head">
+                Inactivas
+                <span class="stat-icon warning">
+                  <i class="fa-solid fa-clock"></i>
+                </span>
+              </div>
+              <div class="stat-value" id="seasonInactiveCount">0</div>
+              <div class="stat-foot">Conservadas en el historial</div>
+            </div>
+          </div>
+          <div class="card season-list-card">
+            <div class="card-head season-card-head">
+              <div>
+                <div class="card-title">Catálogo de temporadas</div>
+                <small class="subtle" id="seasonCountInfo">
+                  Consultando registros...
+                </small>
+              </div>
+              <button class="btn" type="button" data-season-reload>
+                <i class="fa-solid fa-arrows-rotate"></i>
+                Actualizar
+              </button>
+            </div>
+            <div class="card-body season-card-body">
+              <div class="filters season-filters">
+                <input
+                  class="input"
+                  type="search"
+                  id="seasonSearch"
+                  placeholder="Buscar temporada o colección..."
+                />
+                <select class="select" id="seasonTypeFilter">
+                  <option value="">Todos los tipos</option>
+                  <option value="PERMANENTE">Permanente</option>
+                  <option value="ESTACIONAL">Estacional</option>
+                  <option value="CAMPAÑA">Campaña</option>
+                  <option value="COLECCION">Colección especial</option>
+                </select>
+                <select class="select" id="seasonStatusFilter">
+                  <option value="">Todos los estados</option>
+                  <option value="ACTIVA">Activas</option>
+                  <option value="INACTIVA">Inactivas</option>
+                </select>
+              </div>
+              <div class="table-wrap season-table-wrap">
+                <table class="table season-table">
+                  <thead>
+                    <tr>
+                      <th>Temporada / Colección</th>
+                      <th>Tipo</th>
+                      <th>Vigencia</th>
+                      <th>Estado</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody id="seasonRows">
+                    <tr>
+                      <td colspan="5">Cargando temporadas...</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section class="view hidden" data-section="users">
+          <div class="toolbar user-page-heading">
+            <div>
+              <div class="eyebrow">Absolutely No Baby · Administración</div>
+              <h1 class="page-title">Administración de Usuarios</h1>
+              <div class="subtle">
+                Gestiona las cuentas, los roles y los accesos de cada punto de
+                venta.
+              </div>
+            </div>
+            <button class="btn btn-red" type="button" data-user-new>
+              <i class="fa-solid fa-user-plus"></i>
+              Nuevo usuario
+            </button>
+          </div>
+          <div class="stats user-stats">
+            <div class="stat">
+              <div class="stat-head">
+                Total usuarios
+                <span class="stat-icon">
+                  <i class="fa-solid fa-users"></i>
+                </span>
+              </div>
+              <div class="stat-value" id="userTotalCount">0</div>
+              <div class="stat-foot">Cuentas registradas</div>
+            </div>
+            <div class="stat">
+              <div class="stat-head">
+                Usuarios activos
+                <span class="stat-icon">
+                  <i class="fa-solid fa-user-check"></i>
+                </span>
+              </div>
+              <div class="stat-value" id="userActiveCount">0</div>
+              <div class="stat-foot">Con acceso habilitado</div>
+            </div>
+            <div class="stat">
+              <div class="stat-head">
+                Administradores
+                <span class="stat-icon">
+                  <i class="fa-solid fa-shield-halved"></i>
+                </span>
+              </div>
+              <div class="stat-value" id="userAdminCount">0</div>
+              <div class="stat-foot">Cuentas de administración</div>
+            </div>
+            <div class="stat">
+              <div class="stat-head">
+                Usuarios inactivos
+                <span class="stat-icon warning">
+                  <i class="fa-solid fa-user-lock"></i>
+                </span>
+              </div>
+              <div class="stat-value" id="userInactiveCount">0</div>
+              <div class="stat-foot">Cuentas sin acceso</div>
+            </div>
+          </div>
+          <div class="card user-list-card">
+            <div class="card-head">
+              <div>
+                <div class="card-title">Directorio de usuarios</div>
+                <small class="subtle" id="userCountInfo">
+                  Consultando usuarios...
+                </small>
+              </div>
+              <button class="btn" type="button" data-user-reload>
+                <i class="fa-solid fa-arrows-rotate"></i>
+                Actualizar
+              </button>
+            </div>
+            <div class="card-body user-card-body">
+              <div class="filters user-filters">
+                <input
+                  class="input"
+                  type="search"
+                  id="userSearch"
+                  placeholder="Buscar nombre, apellido o correo..."
+                />
+                <select class="select" id="userRoleFilter">
+                  <option value="">Todos los roles</option>
+                </select>
+                <select class="select" id="userBranchFilter">
+                  <option value="">Todas las sucursales</option>
+                </select>
+                <select class="select" id="userStatusFilter">
+                  <option value="">Todos los estados</option>
+                  <option value="ACTIVO">Activos</option>
+                  <option value="INACTIVO">Inactivos</option>
+                </select>
+              </div>
+              <div class="table-wrap user-table-wrap">
+                <table class="table user-table">
+                  <thead>
+                    <tr>
+                      <th>Usuario</th>
+                      <th>Rol asignado</th>
+                      <th>Sucursal</th>
+                      <th>Fecha de registro</th>
+                      <th>Estado</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody id="userRows">
+                    <tr>
+                      <td colspan="6">Consultando usuarios...</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
         <section class="view" data-section="movements">
           <div class="toolbar">
             <div>
@@ -533,94 +727,71 @@
             </div>
           </div>
         </section>
-
         <section class="view transfer-page" data-section="transfers">
           <div class="toolbar transfer-page-heading">
             <div>
               <div class="eyebrow">ABSOLUTELY NO BABY · LOGÍSTICA</div>
-
               <h1 class="page-title">Transferencias</h1>
-
               <div class="subtle">
                 Solicita, aprueba y recibe mercancía entre sucursales con
                 trazabilidad.
               </div>
             </div>
-
             <button
               class="btn btn-red transfer-new-button"
               type="button"
               data-action="transfer"
             >
               <i class="fa-solid fa-plus" aria-hidden="true"></i>
-
               Nueva transferencia
             </button>
           </div>
-
           <div class="transfer-stats" aria-label="Resumen de transferencias">
             <article class="transfer-stat">
               <span class="transfer-stat-icon transfer-stat-icon-total">
                 <i class="fa-solid fa-right-left"></i>
               </span>
-
               <div>
                 <small>TOTAL</small>
-
                 <strong id="transferStatTotal">0</strong>
-
                 <span>Transferencias visibles</span>
               </div>
             </article>
-
             <article class="transfer-stat">
               <span class="transfer-stat-icon transfer-stat-icon-pending">
                 <i class="fa-regular fa-clock"></i>
               </span>
-
               <div>
                 <small>SOLICITADAS</small>
-
                 <strong id="transferStatPending">0</strong>
-
                 <span>Pendientes de aprobación</span>
               </div>
             </article>
-
             <article class="transfer-stat">
               <span class="transfer-stat-icon transfer-stat-icon-transit">
                 <i class="fa-solid fa-truck-fast"></i>
               </span>
-
               <div>
                 <small>EN TRÁNSITO</small>
-
                 <strong id="transferStatTransit">0</strong>
-
                 <span>Esperando recepción</span>
               </div>
             </article>
-
             <article class="transfer-stat">
               <span class="transfer-stat-icon transfer-stat-icon-received">
                 <i class="fa-solid fa-circle-check"></i>
               </span>
-
               <div>
                 <small>RECIBIDAS</small>
-
                 <strong id="transferStatReceived">0</strong>
-
                 <span>Operaciones completadas</span>
               </div>
             </article>
           </div>
-
           <div class="toolbar transfer-toolbar">
             <div class="filters transfer-filters">
               <div class="transfer-search-wrap">
                 <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
-
                 <input
                   class="input"
                   id="transferSearch"
@@ -629,42 +800,31 @@
                   autocomplete="off"
                 />
               </div>
-
               <select
                 class="select"
                 id="transferStatusFilter"
                 aria-label="Filtrar por estado"
               >
                 <option value="">Todos los estados</option>
-
                 <option value="SOLICITADA">Solicitadas</option>
-
                 <option value="EN TRANSITO">En tránsito</option>
-
                 <option value="RECIBIDA">Recibidas</option>
-
                 <option value="RECHAZADA">Rechazadas</option>
               </select>
             </div>
-
             <span class="transfer-scope-note">
               <i class="fa-solid fa-shield-halved"></i>
-
               Solo transferencias de tu sucursal
             </span>
           </div>
-
           <div class="transfer-grid" id="transferCards" aria-live="polite">
             <div class="transfer-empty">
               <i class="fa-solid fa-spinner fa-spin"></i>
-
               <strong>Cargando transferencias...</strong>
-
               <span> Consultando las solicitudes de tu sucursal. </span>
             </div>
           </div>
         </section>
-
         <section class="view" data-section="counts">
           <div class="count-page-heading">
             <div>
@@ -679,7 +839,6 @@
                 <strong id="countBranchLabel">Consultando...</strong>
               </div>
             </div>
-
             <div class="count-brand-mark">
               <span class="count-brand-dot">
                 <i class="fa-solid fa-boxes-stacked"></i>
@@ -690,7 +849,6 @@
               </span>
             </div>
           </div>
-
           <div class="count-stat-grid" aria-label="Resumen de conteos físicos">
             <article class="count-stat-card">
               <div class="count-stat-icon">
@@ -702,7 +860,6 @@
                 <small>Sesiones registradas</small>
               </div>
             </article>
-
             <article class="count-stat-card">
               <div class="count-stat-icon amber">
                 <i class="fa-solid fa-stopwatch"></i>
@@ -713,7 +870,6 @@
                 <small>Captura de cantidades</small>
               </div>
             </article>
-
             <article class="count-stat-card">
               <div class="count-stat-icon blue">
                 <i class="fa-solid fa-clipboard-check"></i>
@@ -724,7 +880,6 @@
                 <small>Esperando validación</small>
               </div>
             </article>
-
             <article class="count-stat-card">
               <div class="count-stat-icon green">
                 <i class="fa-solid fa-circle-check"></i>
@@ -736,7 +891,6 @@
               </div>
             </article>
           </div>
-
           <div class="count-list-toolbar">
             <div>
               <h2>Sesiones de conteo</h2>
@@ -744,7 +898,6 @@
                 Consulta el avance, las diferencias y el estado de cada sesión.
               </p>
             </div>
-
             <div class="count-toolbar-actions">
               <div class="count-filter-wrap">
                 <i class="fa-solid fa-filter" aria-hidden="true"></i>
@@ -760,7 +913,6 @@
                   <option value="CANCELADO">Cancelados</option>
                 </select>
               </div>
-
               <button
                 class="btn btn-red count-new-button"
                 type="button"
@@ -771,14 +923,12 @@
               </button>
             </div>
           </div>
-
           <div class="count-grid" id="countCards" aria-live="polite">
             <div class="count-loading">
               <i class="fa-solid fa-circle-notch fa-spin"></i>
               <span>Cargando conteos...</span>
             </div>
           </div>
-
           <div class="count-footnote">
             <i class="fa-solid fa-shield-halved"></i>
             Los ajustes solo se aplican después de la aprobación de un
@@ -786,7 +936,6 @@
             registrada como movimiento AJU.
           </div>
         </section>
-
         <section class="view" data-section="alerts">
           <div class="alerts-page">
             <header class="alerts-heading">
@@ -794,24 +943,19 @@
                 <span class="alerts-eyebrow">
                   ABSOLUTELY NO BABY · ANB PREMIUM
                 </span>
-
                 <h1 class="page-title">Alertas de stock</h1>
-
                 <p class="alerts-subtitle">
                   Anticipa faltantes y repón cada variante según las existencias
                   reales de tu sucursal.
                 </p>
-
                 <div class="alerts-branch-context">
                   <span class="alerts-live-indicator"></span>
-
                   <span>
                     Sucursal activa ·
                     <strong id="alertsBranchName"> Consultando... </strong>
                   </span>
                 </div>
               </div>
-
               <button
                 class="btn alerts-refresh-button"
                 type="button"
@@ -821,76 +965,55 @@
                 Actualizar alertas
               </button>
             </header>
-
             <div class="alerts-metric-grid">
               <article class="alerts-metric-card">
                 <span class="alerts-metric-icon is-warning">
                   <i class="fa-solid fa-triangle-exclamation"></i>
                 </span>
-
                 <span class="alerts-metric-label"> Variantes en alerta </span>
-
                 <strong id="alertMetricVariants">--</strong>
-
                 <small> Igual o por debajo del mínimo </small>
               </article>
-
               <article class="alerts-metric-card">
                 <span class="alerts-metric-icon is-primary">
                   <i class="fa-solid fa-boxes-stacked"></i>
                 </span>
-
                 <span class="alerts-metric-label"> Unidades actuales </span>
-
                 <strong id="alertMetricUnits">--</strong>
-
                 <small> Unidades disponibles en alerta </small>
               </article>
-
               <article class="alerts-metric-card">
                 <span class="alerts-metric-icon is-critical">
                   <i class="fa-solid fa-box-open"></i>
                 </span>
-
                 <span class="alerts-metric-label"> Variantes agotadas </span>
-
                 <strong id="alertMetricOutOfStock">--</strong>
-
                 <small> Sin unidades en la sucursal </small>
               </article>
-
               <article class="alerts-metric-card">
                 <span class="alerts-metric-icon is-info">
                   <i class="fa-solid fa-arrow-trend-up"></i>
                 </span>
-
                 <span class="alerts-metric-label"> Para llegar al mínimo </span>
-
                 <strong id="alertMetricMissing">--</strong>
-
                 <small> Unidades de reposición sugeridas </small>
               </article>
             </div>
-
             <section class="alerts-list-panel">
               <div class="alerts-list-toolbar">
                 <div>
                   <span class="alerts-section-kicker">
                     SEGUIMIENTO DE EXISTENCIAS
                   </span>
-
                   <h2>Variantes que requieren atención</h2>
-
                   <p>
                     Selecciona una prenda para registrar una entrada o
                     solicitarla a otra sucursal.
                   </p>
                 </div>
-
                 <div class="alerts-list-controls">
                   <label class="alerts-search-field" for="alertSearch">
                     <i class="fa-solid fa-magnifying-glass"></i>
-
                     <input
                       class="input"
                       id="alertSearch"
@@ -899,7 +1022,6 @@
                       autocomplete="off"
                     />
                   </label>
-
                   <div class="alerts-filter-field">
                     <select
                       class="select"
@@ -907,26 +1029,20 @@
                       aria-label="Filtrar alertas"
                     >
                       <option value="">Todas las alertas</option>
-
                       <option value="AGOTADO">Agotadas</option>
-
                       <option value="BAJO">Bajo mínimo</option>
                     </select>
                   </div>
                 </div>
               </div>
-
               <div class="alerts-grid" id="alertCards" aria-live="polite">
                 <div class="alerts-loading">
                   <i class="fa-solid fa-circle-notch fa-spin"></i>
-
                   <span> Consultando existencias de tu sucursal... </span>
                 </div>
               </div>
-
               <div class="alerts-footnote">
                 <i class="fa-solid fa-shield-halved"></i>
-
                 <span>
                   Los niveles se calculan por variante y sucursal usando la
                   tabla <strong>inventario</strong>. Las entradas actualizan
@@ -940,7 +1056,6 @@
         </section>
       </main>
     </div>
-
     <div class="modal-backdrop hidden" id="modalBackdrop">
       <div class="modal" id="modal">
         <div class="modal-content hidden" data-modal-content="new-product">
@@ -964,7 +1079,6 @@
                   <option value="" disabled selected>
                     Seleccione un grupo
                   </option>
-
                   <option
                     th:each="grupo : ${grupos}"
                     th:value="${grupo.codigoGrupo}"
@@ -972,7 +1086,6 @@
                   ></option>
                 </select>
               </div>
-
               <div class="field">
                 <label for="tipoProducto">Tipo (TT)</label>
                 <select
@@ -983,7 +1096,6 @@
                   required
                 >
                   <option value="" disabled selected>Seleccione un tipo</option>
-
                   <option
                     th:each="tipo : ${tipos}"
                     th:value="${tipo.codigoTipoProducto}"
@@ -991,7 +1103,6 @@
                   ></option>
                 </select>
               </div>
-
               <div class="field">
                 <label for="modelo">Modelo (MM)</label>
                 <select
@@ -1004,7 +1115,6 @@
                   <option value="" disabled selected>
                     Seleccione una modelo
                   </option>
-
                   <option
                     th:each="modelo : ${modelos}"
                     th:value="${modelo.codigoModelo}"
@@ -1012,7 +1122,6 @@
                   ></option>
                 </select>
               </div>
-
               <div class="field">
                 <label for="consecutivo">Consecutivo (CC)</label>
                 <input
@@ -1024,7 +1133,6 @@
                   readonly
                 />
               </div>
-
               <div class="field">
                 <label for="nombreProducto">Nombre</label>
                 <input
@@ -1036,7 +1144,6 @@
                   required
                 />
               </div>
-
               <div class="field">
                 <label for="precioProducto">Precio venta</label>
                 <input
@@ -1051,7 +1158,6 @@
                   required
                 />
               </div>
-
               <div class="field">
                 <label for="temporada">Temporada</label>
                 <select
@@ -1061,7 +1167,6 @@
                   style="width: 100%"
                 >
                   <option value="">Sin temporada</option>
-
                   <option
                     th:each="temporada : ${temporadas}"
                     th:value="${temporada.idTemporada}"
@@ -1069,8 +1174,7 @@
                   ></option>
                 </select>
               </div>
-
-              <div class="field">
+              <div class="field" id="stockInicialField">
                 <label for="stock">Stock inicial</label>
                 <input
                   class="input"
@@ -1085,7 +1189,6 @@
                   required
                 />
               </div>
-
               <div class="field">
                 <label for="talla">Talla</label>
                 <select
@@ -1099,10 +1202,8 @@
                   <option value="">Primero seleccione un modelo</option>
                 </select>
               </div>
-
               <div class="field">
                 <label id="colorLabel">Color</label>
-
                 <div class="color-picker" id="colorPicker">
                   <button
                     class="select color-picker-trigger"
@@ -1118,14 +1219,12 @@
                     </span>
                     <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
                   </button>
-
                   <div
                     class="color-picker-options hidden"
                     id="colorOptions"
                     role="listbox"
                     aria-label="Colores disponibles"
                   ></div>
-
                   <input
                     type="hidden"
                     id="color"
@@ -1135,7 +1234,6 @@
                   />
                 </div>
               </div>
-
               <div class="field full">
                 <label for="descripcionProducto">Descripción</label>
                 <textarea
@@ -1146,7 +1244,6 @@
                 ></textarea>
               </div>
             </div>
-
             <div class="label-preview">
               <b>Código generado</b>
               <div class="barcode-lines" id="codigoPreview">————————</div>
@@ -1160,37 +1257,172 @@
             </button>
           </div>
         </div>
-
+        <div class="modal-content hidden user-modal" data-modal-content="user">
+          <div class="modal-head user-modal-head">
+            <div class="user-modal-heading">
+              <div class="user-modal-icon">
+                <i class="fa-solid fa-user-gear"></i>
+              </div>
+              <div>
+                <span class="user-modal-eyebrow">
+                  ADMINISTRACIÓN DE CUENTAS
+                </span>
+                <h3 id="userModalTitle">Nuevo usuario</h3>
+                <p id="userModalSubtitle">
+                  Crea una cuenta y asigna sus permisos.
+                </p>
+              </div>
+            </div>
+            <button class="close" type="button" data-close aria-label="Cerrar">
+              ×
+            </button>
+          </div>
+          <div class="modal-body user-modal-body">
+            <input type="hidden" id="userId" />
+            <div class="user-security-notice">
+              <span class="user-security-icon">
+                <i class="fa-solid fa-shield-halved"></i>
+              </span>
+              <div>
+                <strong>Control de acceso ANB</strong>
+                <small>
+                  Cada cuenta tendrá permisos según el rol y punto de venta que
+                  le asignes.
+                </small>
+              </div>
+            </div>
+            <form id="userForm" class="form-grid user-form-grid" novalidate>
+              <div class="field">
+                <label for="userName"> Nombre * </label>
+                <input
+                  class="input"
+                  type="text"
+                  id="userName"
+                  maxlength="100"
+                  placeholder="Nombre"
+                  autocomplete="given-name"
+                  required
+                />
+              </div>
+              <div class="field">
+                <label for="userLastName"> Apellido * </label>
+                <input
+                  class="input"
+                  type="text"
+                  id="userLastName"
+                  maxlength="100"
+                  placeholder="Apellido"
+                  autocomplete="family-name"
+                  required
+                />
+              </div>
+              <div class="field full">
+                <label for="userEmail"> Correo electrónico * </label>
+                <input
+                  class="input"
+                  type="email"
+                  id="userEmail"
+                  maxlength="180"
+                  placeholder="usuario@empresa.com"
+                  autocomplete="email"
+                  required
+                />
+                <small class="user-field-hint">
+                  Será el identificador utilizado para iniciar sesión.
+                </small>
+              </div>
+              <div class="field full">
+                <label for="userPassword"> Contraseña </label>
+                <input
+                  class="input"
+                  type="password"
+                  id="userPassword"
+                  minlength="8"
+                  maxlength="128"
+                  placeholder="Mínimo 8 caracteres"
+                  autocomplete="new-password"
+                />
+                <small class="user-field-hint" id="userPasswordHint">
+                  La contraseña inicial es obligatoria.
+                </small>
+              </div>
+              <div class="field">
+                <label for="userRole"> Rol del usuario * </label>
+                <select class="select" id="userRole" required>
+                  <option value="">Selecciona un rol</option>
+                </select>
+                <small class="user-field-hint">
+                  Determina el nivel de acceso de la cuenta.
+                </small>
+              </div>
+              <div class="field">
+                <label for="userBranch"> Sucursal asignada * </label>
+                <select class="select" id="userBranch" required>
+                  <option value="">Selecciona una sucursal</option>
+                </select>
+              </div>
+              <div class="field full">
+                <div class="user-active-card">
+                  <div class="user-active-info">
+                    <div class="user-active-icon">
+                      <i class="fa-solid fa-toggle-on"></i>
+                    </div>
+                    <div>
+                      <strong>Cuenta activa</strong>
+                      <small>
+                        El usuario podrá ingresar al sistema cuando esta opción
+                        esté habilitada.
+                      </small>
+                    </div>
+                  </div>
+                  <label class="user-switch">
+                    <input type="checkbox" id="userActive" checked />
+                    <span class="user-switch-slider"></span>
+                  </label>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-foot user-modal-foot">
+            <button class="btn" type="button" data-close>Cancelar</button>
+            <button class="btn hidden" type="button" data-user-edit-inline>
+              <i class="fa-solid fa-pen"></i>
+              Editar usuario
+            </button>
+            <button class="btn btn-red" type="button" data-user-save>
+              <i class="fa-solid fa-user-plus"></i>
+              Crear usuario
+            </button>
+          </div>
+        </div>
         <div
           class="modal-content hidden movement-modal"
           data-modal-content="movement"
         >
           <div class="modal-head movement-modal-head">
-            <div>
-              <span class="movement-eyebrow"> OPERACIÓN DE INVENTARIO </span>
-
-              <h3>Registrar movimiento</h3>
-
-              <p>Controla las entradas, salidas y ajustes de tus prendas.</p>
+            <div class="modal-heading-group">
+              <span class="modal-heading-icon">
+                <i class="fa-solid fa-boxes-stacked"></i>
+              </span>
+              <div>
+                <span class="movement-eyebrow"> OPERACIÓN DE INVENTARIO </span>
+                <h3>Registrar movimiento</h3>
+                <p>Controla las entradas, salidas y ajustes de tus prendas.</p>
+              </div>
             </div>
-
             <button class="close" type="button" data-close aria-label="Cerrar">
               ×
             </button>
           </div>
-
           <div class="modal-body movement-modal-body">
             <section class="movement-type-section">
               <div class="movement-section-title">
                 <div>
                   <span class="movement-step"> 01 · TIPO DE OPERACIÓN </span>
-
                   <h4>¿Qué movimiento necesitas registrar?</h4>
                 </div>
-
                 <span class="movement-required"> Obligatorio </span>
               </div>
-
               <div class="movement-type-grid">
                 <button
                   class="movement-type-card is-active"
@@ -1201,16 +1433,13 @@
                   <span class="movement-type-icon">
                     <i class="fa-solid fa-boxes-packing"></i>
                   </span>
-
                   <span class="movement-type-copy">
                     <small>01 · ENT</small>
                     <b>Entrada</b>
                     <span>Ingresa mercancía</span>
                   </span>
-
                   <i class="fa-solid fa-circle-check movement-type-check"></i>
                 </button>
-
                 <button
                   class="movement-type-card"
                   type="button"
@@ -1220,16 +1449,13 @@
                   <span class="movement-type-icon">
                     <i class="fa-solid fa-truck-fast"></i>
                   </span>
-
                   <span class="movement-type-copy">
                     <small>02 · SAL</small>
                     <b>Salida</b>
                     <span>Retira mercancía</span>
                   </span>
-
                   <i class="fa-solid fa-circle-check movement-type-check"></i>
                 </button>
-
                 <button
                   class="movement-type-card"
                   type="button"
@@ -1239,16 +1465,13 @@
                   <span class="movement-type-icon">
                     <i class="fa-solid fa-clipboard-check"></i>
                   </span>
-
                   <span class="movement-type-copy">
                     <small>03 · AJU</small>
                     <b>Ajuste</b>
                     <span>Corrige existencias</span>
                   </span>
-
                   <i class="fa-solid fa-circle-check movement-type-check"></i>
                 </button>
-
                 <button
                   class="movement-type-card"
                   type="button"
@@ -1258,71 +1481,57 @@
                   <span class="movement-type-icon">
                     <i class="fa-solid fa-box-open"></i>
                   </span>
-
                   <span class="movement-type-copy">
                     <small>04 · DEV</small>
                     <b>Devolución</b>
                     <span>Mercancía devuelta</span>
                   </span>
-
                   <i class="fa-solid fa-circle-check movement-type-check"></i>
                 </button>
               </div>
             </section>
-
             <section class="movement-context-section">
               <div class="movement-section-title">
                 <div>
                   <span class="movement-step"> 02 · CONTEXTO </span>
-
                   <h4>¿Dónde y quién realiza la operación?</h4>
                 </div>
               </div>
-
               <div class="movement-context-grid">
                 <div class="field">
                   <label>Sucursal asignada</label>
-
                   <div class="movement-current-user" id="movementCurrentBranch">
                     <span class="movement-current-user-avatar">
                       <i class="fa-solid fa-store"></i>
                     </span>
-
                     <span class="movement-current-user-info">
                       <strong id="movementCurrentBranchName">
                         Consultando sucursal...
                       </strong>
-
                       <small id="movementCurrentBranchMeta">
                         Verificando sucursal asignada
                       </small>
                     </span>
-
                     <span class="movement-current-user-lock">
                       <i class="fa-solid fa-lock"></i>
                       SUCURSAL ASIGNADA
                     </span>
                   </div>
                 </div>
-
                 <div class="field">
                   <label for="movementUsuario"> Usuario responsable </label>
-
                   <div class="movement-current-user" id="movementCurrentUser">
                     <span class="movement-current-user-avatar">
                       <i class="fa-solid fa-user"></i>
                     </span>
-
                     <span class="movement-current-user-info">
                       <strong id="movementCurrentUserName">
                         Consultando sesión...
                       </strong>
-
                       <small id="movementCurrentUserMeta">
                         Verificando usuario autenticado
                       </small>
                     </span>
-
                     <span class="movement-current-user-lock">
                       <i class="fa-solid fa-lock"></i>
                       SESIÓN ACTIVA
@@ -1330,41 +1539,32 @@
                   </div>
                 </div>
               </div>
-
               <div
                 class="movement-return-direction hidden"
                 id="movementReturnDirection"
               >
                 <div>
                   <b>Sentido de la devolución</b>
-
                   <small> Define cómo se actualizarán las existencias. </small>
                 </div>
-
                 <select class="select" id="movementReturnDirectionSelect">
                   <option value="ENTRADA">Ingresa a la tienda</option>
-
                   <option value="SALIDA">Sale hacia el proveedor</option>
                 </select>
               </div>
             </section>
-
             <section class="movement-products-section">
               <div class="movement-section-title">
                 <div>
                   <span class="movement-step"> 03 · PRODUCTOS </span>
-
                   <h4>Agrega las prendas y sus variantes</h4>
                 </div>
-
                 <span class="movement-item-counter" id="movementItemCount">
                   0 REFERENCIAS
                 </span>
               </div>
-
               <div class="movement-search-wrap">
                 <i class="fa-solid fa-magnifying-glass"></i>
-
                 <input
                   class="input"
                   id="movementVariantSearch"
@@ -1372,25 +1572,20 @@
                   autocomplete="off"
                   placeholder="Busca por nombre, código, talla, color o código de barras..."
                 />
-
                 <span class="movement-search-hint"> Buscar </span>
               </div>
-
               <div
                 class="movement-variant-results hidden"
                 id="movementVariantResults"
                 role="listbox"
                 aria-label="Resultados de productos"
               ></div>
-
               <div class="movement-selected-items" id="movementSelectedItems">
                 <div class="movement-empty-state">
                   <span>
                     <i class="fa-solid fa-boxes-stacked"></i>
                   </span>
-
                   <b> Aún no has agregado prendas </b>
-
                   <small>
                     Busca una referencia arriba y selecciona las tallas y
                     colores que vas a mover.
@@ -1398,22 +1593,18 @@
                 </div>
               </div>
             </section>
-
             <section class="movement-info-section">
               <div class="movement-section-title">
                 <div>
                   <span class="movement-step"> 04 · TRAZABILIDAD </span>
-
                   <h4>Información adicional</h4>
                 </div>
               </div>
-
               <div class="movement-info-grid">
                 <div class="field">
                   <label for="movementReference">
                     Documento de referencia
                   </label>
-
                   <input
                     class="input"
                     id="movementReference"
@@ -1422,17 +1613,14 @@
                     readonly
                     aria-readonly="true"
                   />
-
                   <small class="subtle">
                     Código generado automáticamente por el sistema.
                   </small>
                 </div>
-
                 <div class="field">
                   <label for="movementObservation">
                     Motivo / observaciones
                   </label>
-
                   <textarea
                     class="textarea"
                     id="movementObservation"
@@ -1442,60 +1630,49 @@
                 </div>
               </div>
             </section>
-
             <div class="movement-summary" id="movementSummary">
               <div class="movement-summary-top">
                 <div>
                   <span class="movement-step"> RESUMEN DE LA OPERACIÓN </span>
-
                   <b>Impacto en inventario</b>
                 </div>
-
                 <span class="movement-summary-status">
                   <i class="fa-solid fa-shield-check"></i>
                   Validación automática
                 </span>
               </div>
-
               <div class="movement-summary-stats">
                 <div>
                   <small>Referencias</small>
                   <b id="movementSummaryItems">0</b>
                 </div>
-
                 <div>
                   <small>Unidades que ingresan</small>
                   <b class="is-in" id="movementSummaryIn">0</b>
                 </div>
-
                 <div>
                   <small>Unidades que salen</small>
                   <b class="is-out" id="movementSummaryOut">0</b>
                 </div>
               </div>
-
               <p id="movementSummaryMessage">
                 Agrega al menos una variante para calcular el impacto de esta
                 operación.
               </p>
             </div>
           </div>
-
           <div class="modal-foot movement-modal-foot">
             <button class="btn" type="button" data-close>Cancelar</button>
-
             <button
               class="btn btn-red movement-submit"
               type="button"
               data-save-movement
             >
               <i class="fa-solid fa-check"></i>
-
               Confirmar movimiento
             </button>
           </div>
         </div>
-
         <div
           class="modal-content hidden transfer-modal"
           data-modal-content="transfer"
@@ -1505,24 +1682,19 @@
               <span class="transfer-modal-title-icon">
                 <i class="fa-solid fa-right-left"></i>
               </span>
-
               <div>
                 <h3>Nueva transferencia</h3>
-
                 <p>Solicita mercancía a otra sucursal</p>
               </div>
             </div>
-
             <button class="close" type="button" data-close aria-label="Cerrar">
               ×
             </button>
           </div>
-
           <div class="modal-body transfer-modal-body">
             <div class="transfer-route-panel">
               <div class="transfer-route-field">
                 <label for="transferOriginStore"> Sucursal de origen </label>
-
                 <select
                   class="select"
                   id="transferOriginStore"
@@ -1530,42 +1702,31 @@
                 >
                   <option value="">Cargando sucursales...</option>
                 </select>
-
                 <small> Desde aquí se despacharán las prendas. </small>
               </div>
-
               <div class="transfer-route-arrow">
                 <i class="fa-solid fa-arrow-right-long"></i>
               </div>
-
               <div class="transfer-route-field transfer-destination-field">
                 <label> Tu sucursal · destino </label>
-
                 <div class="transfer-destination-value">
                   <i class="fa-solid fa-location-dot"></i>
-
                   <span id="transferDestinationStore">
                     Consultando tu sesión...
                   </span>
-
                   <i class="fa-solid fa-lock transfer-lock-icon"></i>
                 </div>
-
                 <small> Se asigna automáticamente a tu cuenta. </small>
               </div>
             </div>
-
             <div class="transfer-section-heading">
               <div>
                 <span class="transfer-step"> 01 </span>
-
                 <div>
                   <strong> Productos solicitados </strong>
-
                   <small> Busca por nombre, código, talla o color. </small>
                 </div>
               </div>
-
               <span
                 class="transfer-selection-count"
                 id="transferSelectionCount"
@@ -1573,10 +1734,8 @@
                 0 prendas
               </span>
             </div>
-
             <div class="transfer-product-search">
               <i class="fa-solid fa-magnifying-glass"></i>
-
               <input
                 class="input"
                 id="transferVariantSearch"
@@ -1586,37 +1745,28 @@
                 disabled
               />
             </div>
-
             <div
               class="transfer-variant-results hidden"
               id="transferVariantResults"
             ></div>
-
             <div class="transfer-lines-wrap">
               <div class="transfer-lines-header">
                 <span> Prendas agregadas </span>
-
                 <span id="transferUnitsLabel"> 0 unidades </span>
               </div>
-
               <div class="transfer-lines" id="transferSelectedLines">
                 <div class="transfer-lines-empty">
                   <i class="fa-solid fa-box-open"></i>
-
                   <strong> Aún no has agregado prendas </strong>
-
                   <span> Las variantes seleccionadas aparecerán aquí. </span>
                 </div>
               </div>
             </div>
-
             <div class="transfer-observation-field">
               <label for="transferObservation">
                 Observaciones
-
                 <span>(opcional)</span>
               </label>
-
               <textarea
                 class="textarea"
                 id="transferObservation"
@@ -1624,32 +1774,25 @@
                 placeholder="Indica el motivo de la solicitud o alguna instrucción para la sucursal de origen..."
               ></textarea>
             </div>
-
             <div class="transfer-process-note">
               <span>
                 <i class="fa-solid fa-shield-halved"></i>
               </span>
-
               <p>
                 <strong> Solicitud sin afectación de inventario. </strong>
-
                 Las existencias de origen solo se descuentan cuando esa sucursal
                 apruebe la transferencia. El destino suma las unidades al
                 confirmar la recepción.
               </p>
             </div>
           </div>
-
           <div class="modal-foot transfer-modal-foot">
             <div class="transfer-total-summary">
               <small> UNIDADES SOLICITADAS </small>
-
               <strong id="transferSummaryUnits"> 0 </strong>
             </div>
-
             <div class="transfer-modal-actions">
               <button class="btn" type="button" data-close>Cancelar</button>
-
               <button
                 class="btn btn-red"
                 type="button"
@@ -1657,13 +1800,11 @@
                 disabled
               >
                 <i class="fa-solid fa-paper-plane"></i>
-
                 Enviar solicitud
               </button>
             </div>
           </div>
         </div>
-
         <div
           class="modal-content hidden anb-scanner-modal"
           data-modal-content="barcode"
@@ -1673,18 +1814,15 @@
               <div class="scanner-heading-icon">
                 <i class="fa-solid fa-barcode" aria-hidden="true"></i>
               </div>
-
               <div>
                 <h3>Lector de código de barras</h3>
                 <p>Escanea códigos y consulta prendas al instante</p>
               </div>
             </div>
-
             <button class="close" type="button" data-close aria-label="Cerrar">
               ×
             </button>
           </div>
-
           <div class="modal-body anb-scanner-body">
             <div class="scanner-layout">
               <section class="scanner-card scanner-workspace">
@@ -1695,33 +1833,27 @@
                   aria-live="polite"
                 >
                   <span class="scanner-status-indicator"></span>
-
                   <div>
                     <strong data-scanner-status-title>
                       Lector preparado
                     </strong>
-
                     <p data-scanner-status-message>
                       Escanea un código de barras para comenzar.
                     </p>
                   </div>
-
                   <i
                     class="fa-solid fa-wifi scanner-status-icon"
                     aria-hidden="true"
                   ></i>
                 </div>
-
                 <div class="scanner-input-section">
                   <label for="barcodeInput" class="scanner-label">
                     Código de barras
                   </label>
-
                   <div class="scanner-input-row">
                     <div class="scanner-input-icon">
                       <i class="fa-solid fa-barcode" aria-hidden="true"></i>
                     </div>
-
                     <input
                       class="input scanner-input"
                       id="barcodeInput"
@@ -1731,7 +1863,6 @@
                       autocapitalize="off"
                       spellcheck="false"
                     />
-
                     <button
                       class="btn btn-red scanner-submit"
                       type="button"
@@ -1740,13 +1871,11 @@
                       Consultar
                     </button>
                   </div>
-
                   <p class="scanner-hint">
                     <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
                     Usa la pistola USB o escribe el código y presiona Enter.
                   </p>
                 </div>
-
                 <div
                   id="barcodeResult"
                   class="scanner-result"
@@ -1756,35 +1885,28 @@
                     <div class="scanner-empty-icon">
                       <i class="fa-solid fa-box-open" aria-hidden="true"></i>
                     </div>
-
                     <strong>Esperando una lectura</strong>
-
                     <p>El resultado del producto aparecerá aquí.</p>
                   </div>
                 </div>
               </section>
-
               <aside class="scanner-side">
                 <section class="scanner-card scanner-camera-card">
                   <div class="scanner-side-heading">
                     <div class="scanner-side-icon">
                       <i class="fa-solid fa-camera" aria-hidden="true"></i>
                     </div>
-
                     <div>
                       <strong>Lector por cámara</strong>
                       <p>Alternativa a la pistola USB</p>
                     </div>
                   </div>
-
                   <div class="scanner-video-frame">
                     <video id="barcodeVideo" autoplay muted playsinline></video>
-
                     <div class="scanner-video-overlay">
                       <span></span>
                     </div>
                   </div>
-
                   <p
                     id="barcodeCameraStatus"
                     class="scanner-camera-status"
@@ -1792,7 +1914,6 @@
                   >
                     Cámara detenida. Puedes activarla cuando la necesites.
                   </p>
-
                   <div class="scanner-camera-actions">
                     <button
                       class="btn btn-red"
@@ -1802,7 +1923,6 @@
                       <i class="fa-solid fa-video" aria-hidden="true"></i>
                       Activar cámara
                     </button>
-
                     <button
                       class="btn"
                       id="barcodeStopCamera"
@@ -1816,17 +1936,14 @@
               </aside>
             </div>
           </div>
-
           <div class="modal-foot anb-scanner-footer">
             <div class="scanner-footer-note">
               <span></span>
               Lector listo para recibir códigos
             </div>
-
             <button class="btn" type="button" data-close>Cerrar lector</button>
           </div>
         </div>
-
         <div class="modal-content hidden" data-modal-content="labels">
           <div class="modal-head">
             <h3>Impresión de etiquetas</h3>
@@ -1840,10 +1957,8 @@
                 <label for="labelCode"
                   >Elige la prenda que deseas etiquetar</label
                 >
-
                 <div class="label-select-wrap">
                   <i class="fa-solid fa-shirt" aria-hidden="true"></i>
-
                   <select
                     class="select label-product-select"
                     id="labelCode"
@@ -1853,12 +1968,10 @@
                     <option value="">Cargando prendas...</option>
                   </select>
                 </div>
-
                 <small class="label-field-hint">
                   Selecciona una referencia para generar su código de barras.
                 </small>
               </div>
-
               <div class="field">
                 <label for="labelQuantity">Cantidad</label>
                 <input
@@ -1866,21 +1979,19 @@
                   id="labelQuantity"
                   style="width: 100%"
                   type="number"
-                  value="10"
+                  value="1"
                   min="1"
                   max="500"
                 />
               </div>
-
               <div class="field">
                 <label for="labelFormat">Formato</label>
                 <select class="select" id="labelFormat" style="width: 100%">
                   <option value="thermal58">Rollo térmico 58 mm</option>
                   <option value="thermal80">Rollo térmico 80 mm</option>
-                  <option value="a4">Hoja adhesiva A4</option>
+                  <option value="a4" selected>Hoja adhesiva A4</option>
                 </select>
               </div>
-
               <div class="field">
                 <label for="labelPrice">Precio</label>
                 <input
@@ -1893,7 +2004,6 @@
                 />
               </div>
             </div>
-
             <div class="label-preview" id="labelPreview">
               <b>ABSOLUTELY NO BABY</b>
               <div class="barcode-area">
@@ -1910,7 +2020,6 @@
             </button>
           </div>
         </div>
-
         <div
           class="modal-content hidden transfer-detail-modal"
           data-modal-content="detail-transfer"
@@ -1920,30 +2029,24 @@
               <span class="transfer-modal-title-icon">
                 <i class="fa-solid fa-clipboard-list"></i>
               </span>
-
               <div>
                 <h3>Detalle de transferencia</h3>
-
                 <p>Estado, recorrido y prendas de la solicitud</p>
               </div>
             </div>
-
             <button class="close" type="button" data-close aria-label="Cerrar">
               ×
             </button>
           </div>
-
           <div
             class="modal-body transfer-detail-body"
             id="transferDetailContent"
           >
             <div class="transfer-empty">
               <i class="fa-solid fa-spinner fa-spin"></i>
-
               <strong> Cargando detalle... </strong>
             </div>
           </div>
-
           <div
             class="modal-foot transfer-modal-foot"
             id="transferDetailActions"
@@ -1951,30 +2054,31 @@
             <button class="btn" type="button" data-close>Cerrar</button>
           </div>
         </div>
-
         <div
           class="modal-content hidden count-modal"
           data-modal-content="count-new"
         >
           <div class="modal-head">
-            <div>
-              <span class="count-modal-eyebrow">
-                ANB PREMIUM · NUEVA SESIÓN
+            <div class="modal-heading-group">
+              <span class="modal-heading-icon">
+                <i class="fa-solid fa-clipboard-list"></i>
               </span>
-              <h3>Crear conteo físico</h3>
+              <div>
+                <span class="count-modal-eyebrow">
+                  ANB PREMIUM · NUEVA SESIÓN
+                </span>
+                <h3>Crear conteo físico</h3>
+              </div>
             </div>
-
             <button class="close" type="button" data-close aria-label="Cerrar">
               ×
             </button>
           </div>
-
           <div class="modal-body">
             <div class="count-create-intro">
               <span class="count-create-icon">
                 <i class="fa-solid fa-clipboard-list"></i>
               </span>
-
               <div>
                 <strong>Prepara una nueva conciliación</strong>
                 <p>
@@ -1983,23 +2087,19 @@
                 </p>
               </div>
             </div>
-
             <div class="field count-observation-field">
               <label for="countObservation">
                 Observación de la sesión
                 <span>OPCIONAL</span>
               </label>
-
               <textarea
                 class="textarea"
                 id="countObservation"
                 maxlength="1000"
                 placeholder="Ej. Conteo general de prendas antes del cierre de mes..."
               ></textarea>
-
               <small>Máximo 1.000 caracteres.</small>
             </div>
-
             <div class="count-security-note">
               <i class="fa-solid fa-lock"></i>
               <span>
@@ -2008,58 +2108,52 @@
               </span>
             </div>
           </div>
-
           <div class="modal-foot">
             <button class="btn" type="button" data-close>Cancelar</button>
-
             <button class="btn btn-red" type="button" data-count-create>
               <i class="fa-solid fa-plus"></i>
               Crear sesión
             </button>
           </div>
         </div>
-
         <div
           class="modal-content hidden count-modal count-detail-modal"
           data-modal-content="count-detail"
         >
           <div class="modal-head">
-            <div>
-              <span class="count-modal-eyebrow">
-                ANB PREMIUM · CONCILIACIÓN
+            <div class="modal-heading-group">
+              <span class="modal-heading-icon">
+                <i class="fa-solid fa-clipboard-check"></i>
               </span>
-
-              <h3 id="countDetailTitle">Conteo físico</h3>
+              <div>
+                <span class="count-modal-eyebrow">
+                  ANB PREMIUM · CONCILIACIÓN
+                </span>
+                <h3 id="countDetailTitle">Conteo físico</h3>
+              </div>
             </div>
-
             <button class="close" type="button" data-close aria-label="Cerrar">
               ×
             </button>
           </div>
-
           <div class="modal-body">
             <div id="countDetailSummary"></div>
-
             <section class="count-capture-panel" id="countCapturePanel">
               <div class="count-section-heading">
                 <div>
                   <span class="count-step-number">01</span>
-
                   <div>
                     <h4>Registrar cantidades</h4>
                     <p>Busca la variante que estás contando físicamente.</p>
                   </div>
                 </div>
-
                 <span class="count-capture-chip">
                   <i class="fa-solid fa-barcode"></i>
                   Búsqueda inteligente
                 </span>
               </div>
-
               <div class="count-search-field">
                 <i class="fa-solid fa-magnifying-glass"></i>
-
                 <input
                   class="input"
                   id="countVariantSearch"
@@ -2067,15 +2161,12 @@
                   autocomplete="off"
                   placeholder="Código, prenda, talla, color o código de barras..."
                 />
-
                 <span>2+ caracteres</span>
               </div>
-
               <div
                 class="count-search-results hidden"
                 id="countVariantResults"
               ></div>
-
               <div
                 class="count-selected-variant hidden"
                 id="countSelectedVariant"
@@ -2084,12 +2175,10 @@
                   <span class="count-selected-icon">
                     <i class="fa-solid fa-shirt"></i>
                   </span>
-
                   <div>
                     <strong id="countSelectedName">Producto</strong>
                     <small id="countSelectedMeta"></small>
                   </div>
-
                   <button
                     class="icon-btn"
                     type="button"
@@ -2100,19 +2189,16 @@
                     <i class="fa-solid fa-xmark"></i>
                   </button>
                 </div>
-
                 <div class="count-quantity-grid">
                   <div class="count-system-quantity">
                     <span>Existencia en sistema</span>
                     <strong id="countSelectedSystem">0</strong>
                     <small>Fotografía al registrar esta variante</small>
                   </div>
-
                   <div class="field">
                     <label for="countPhysicalQuantity">
                       Cantidad física encontrada
                     </label>
-
                     <input
                       class="input"
                       id="countPhysicalQuantity"
@@ -2124,13 +2210,11 @@
                     />
                   </div>
                 </div>
-
                 <div class="field count-reason-field">
                   <label for="countReason">
                     Motivo de la diferencia
                     <span>OPCIONAL</span>
                   </label>
-
                   <input
                     class="input"
                     id="countReason"
@@ -2139,13 +2223,11 @@
                     placeholder="Ej. Prenda ubicada en otra zona, daño, sobrante..."
                   />
                 </div>
-
                 <div class="count-editor-actions">
                   <span>
                     <i class="fa-solid fa-circle-info"></i>
                     La diferencia se calcula automáticamente.
                   </span>
-
                   <button
                     class="btn btn-red"
                     type="button"
@@ -2157,19 +2239,16 @@
                 </div>
               </div>
             </section>
-
             <section class="count-records-section">
               <div class="count-section-heading count-records-heading">
                 <div>
                   <span class="count-step-number">02</span>
-
                   <div>
                     <h4>Variantes registradas</h4>
                     <p>Revisa las cantidades y las diferencias detectadas.</p>
                   </div>
                 </div>
               </div>
-
               <div
                 class="table-wrap count-detail-table-wrap"
                 id="countDetailTableWrap"
@@ -2185,7 +2264,6 @@
                       <th></th>
                     </tr>
                   </thead>
-
                   <tbody id="countDetailRows">
                     <tr>
                       <td colspan="6" class="subtle">Cargando registros...</td>
@@ -2195,15 +2273,12 @@
               </div>
             </section>
           </div>
-
           <div class="modal-foot count-modal-footer">
             <span class="count-finalize-hint" id="countFinalizeHint">
               Consulta los registros de esta sesión.
             </span>
-
             <div class="count-footer-actions">
               <button class="btn" type="button" data-close>Cerrar</button>
-
               <button
                 class="btn btn-red hidden"
                 type="button"
@@ -2212,7 +2287,6 @@
                 <i class="fa-solid fa-paper-plane"></i>
                 Enviar a aprobación
               </button>
-
               <button class="btn btn-red hidden" type="button" data-count-apply>
                 <i class="fa-solid fa-check"></i>
                 Aprobar y aplicar ajustes
@@ -2220,27 +2294,137 @@
             </div>
           </div>
         </div>
+        <div
+          class="modal-content hidden season-modal"
+          data-modal-content="season"
+        >
+          <div class="modal-head season-modal-head">
+            <div class="season-modal-heading">
+              <div class="season-modal-icon">
+                <i class="fa-solid fa-calendar-days"></i>
+              </div>
+              <div>
+                <span class="season-modal-eyebrow">
+                  CATÁLOGO DE COLECCIONES
+                </span>
+                <h3 id="seasonModalTitle">Nueva temporada</h3>
+                <p id="seasonModalSubtitle">
+                  Define la identidad y vigencia de tu colección.
+                </p>
+              </div>
+            </div>
+            <button class="close" type="button" data-close aria-label="Cerrar">
+              ×
+            </button>
+          </div>
+          <div class="modal-body season-modal-body">
+            <input type="hidden" id="seasonId" />
+            <div class="season-form-intro">
+              <div class="season-form-intro-icon">
+                <i class="fa-solid fa-circle-info"></i>
+              </div>
+              <div>
+                <strong>Información de la colección</strong>
+                <p id="seasonModalHint">
+                  Completa los datos para registrar una nueva temporada.
+                </p>
+              </div>
+            </div>
+            <div class="form-grid season-form-grid">
+              <div class="field full">
+                <label for="seasonName"> Nombre de la temporada * </label>
+                <input
+                  class="input"
+                  type="text"
+                  id="seasonName"
+                  maxlength="100"
+                  placeholder="Ej. Navidad 2026"
+                  required
+                />
+              </div>
+              <div class="field full">
+                <label for="seasonType"> Tipo de colección * </label>
+                <select class="select" id="seasonType" required>
+                  <option value="">Selecciona un tipo</option>
+                  <option value="PERMANENTE">Permanente</option>
+                  <option value="ESTACIONAL">Estacional</option>
+                  <option value="CAMPAÑA">Campaña</option>
+                  <option value="COLECCION">
+                    Colección especial / Colaboración
+                  </option>
+                </select>
+                <small class="season-field-hint">
+                  Clasifica la naturaleza de esta colección.
+                </small>
+              </div>
+              <div class="field">
+                <label for="seasonStart"> Fecha de inicio </label>
+                <input class="input" type="date" id="seasonStart" />
+              </div>
+              <div class="field">
+                <label for="seasonEnd"> Fecha de finalización </label>
+                <input class="input" type="date" id="seasonEnd" />
+              </div>
+              <div class="field full">
+                <label for="seasonDescription"> Descripción </label>
+                <textarea
+                  class="textarea"
+                  id="seasonDescription"
+                  maxlength="255"
+                  placeholder="Describe la temporada, festividad o colaboración..."
+                ></textarea>
+                <small class="season-field-hint">
+                  Máximo 255 caracteres.
+                </small>
+              </div>
+              <div class="field full">
+                <div class="season-active-card">
+                  <div class="season-active-info">
+                    <div class="season-active-icon">
+                      <i class="fa-solid fa-toggle-on"></i>
+                    </div>
+                    <div>
+                      <strong>Temporada activa</strong>
+                      <small>
+                        Permite seleccionar esta temporada al crear nuevos
+                        productos.
+                      </small>
+                    </div>
+                  </div>
+                  <label class="season-switch">
+                    <input type="checkbox" id="seasonActive" checked />
+                    <span class="season-switch-slider"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-foot season-modal-foot">
+            <button class="btn" type="button" data-close>Cancelar</button>
+            <button class="btn hidden" type="button" data-season-edit-inline>
+              <i class="fa-solid fa-pen"></i>
+              Editar temporada
+            </button>
+            <button class="btn btn-red" type="button" data-season-save>
+              <i class="fa-solid fa-floppy-disk"></i>
+              Crear temporada
+            </button>
+          </div>
+        </div>
       </div>
     </div>
-
     <template id="toastTemplate"
       ><div class="toast" role="status">
         <strong data-toast-title></strong><span data-toast-message></span></div
     ></template>
-
     <div id="labelsPrintArea" aria-hidden="true"></div>
-
-    <audio id="printerAudio" preload="auto">
-      <source src="assets/audio/printer.mp3" type="audio/mpeg" />
-    </audio>
-
     <script th:src="@{/js/theme.js}"></script>
     <script src="https://unpkg.com/@zxing/browser@0.2.1"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.12.3/dist/JsBarcode.all.min.js"></script>
+    <script th:src="@{/js/talla.js}"></script>
     <script th:src="@{/js/app.js}"></script>
     <script th:src="@{/js/combo.js}"></script>
     <script th:src="@{/js/consecutivo.js}"></script>
-    <script th:src="@{/js/talla.js}"></script>
     <script th:src="@{/js/color.js}"></script>
     <script th:src="@{/js/codigo.js}"></script>
   </body>

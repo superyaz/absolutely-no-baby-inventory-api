@@ -184,7 +184,7 @@ public class ProductoCompletoService {
                 producto.setNombre(request.getNombre().trim());
                 producto.setDescripcion(request.getDescripcion());
                 producto.setPrecio(request.getPrecio());
-                producto.setStock(request.getStock() != null ? request.getStock() : 0);
+                producto.setStock(0);
                 producto.setFechaCreacion(LocalDateTime.now());
                 producto.setActivo(true);
                 producto.setGrupo(grupo);
@@ -222,8 +222,8 @@ public class ProductoCompletoService {
                 inventario.setProductoVariante(variante);
 
                 inventario.setCantidad(
-                                producto.getStock() != null
-                                                ? producto.getStock()
+                                request.getStock() != null
+                                                ? request.getStock()
                                                 : 0);
 
                 inventario.setStockMinimo(3);
@@ -259,7 +259,6 @@ public class ProductoCompletoService {
                 producto.setNombre(request.getNombre());
                 producto.setDescripcion(request.getDescripcion());
                 producto.setPrecio(request.getPrecio());
-                producto.setStock(request.getStock());
 
                 if (request.getIdTemporada() != null) {
                         var temporada = temporadaRepository.findById(request.getIdTemporada())

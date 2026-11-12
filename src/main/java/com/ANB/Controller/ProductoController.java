@@ -139,6 +139,7 @@ public class ProductoController {
                         "No se encontró el usuario de la sesión."));
 
         if (usuario.getSucursal() == null) {
+
             throw new ResponseStatusException(
                     HttpStatus.FORBIDDEN,
                     "El usuario no tiene una sucursal asignada.");
@@ -148,72 +149,70 @@ public class ProductoController {
 
         List<Inventario> existencias = inventarioRepository.findBySucursal_IdSucursal(sucursalId);
 
-        Map<Long, Integer> stockPorVariante = new HashMap<>();
+        List<Map<String, Object>> resultado = new ArrayList<>();
 
         for (Inventario existencia : existencias) {
 
-            if (existencia.getProductoVariante() == null) {
+            ProductoVariante variante = existencia.getProductoVariante();
+
+            if (variante == null
+                    || Boolean.FALSE.equals(variante.getActivo())) {
                 continue;
             }
-
-            Long varianteId = existencia.getProductoVariante().getIdProductoVariante();
-
-            stockPorVariante.put(
-                    varianteId,
-                    existencia.getCantidad() == null
-                            ? 0
-                            : existencia.getCantidad());
-        }
-
-        List<ProductoVariante> variantes = varianteRepository.findAll();
-
-        List<Map<String, Object>> resultado = new ArrayList<>();
-
-        for (ProductoVariante variante : variantes) {
 
             Producto producto = variante.getProducto();
 
             if (producto == null
-                    || Boolean.FALSE.equals(producto.getActivo())
-                    || Boolean.FALSE.equals(variante.getActivo())) {
+                    || Boolean.FALSE.equals(producto.getActivo())) {
                 continue;
             }
 
             Map<String, Object> fila = new HashMap<>();
 
             fila.put("codigoProducto", producto.getCodigoProducto());
-            fila.put("varianteId", variante.getIdProductoVariante());
+
+            fila.put(
+                    "varianteId",
+                    variante.getIdProductoVariante());
+
             fila.put("nombre", producto.getNombre());
 
-            fila.put("grupo",
+            fila.put(
+                    "grupo",
                     producto.getGrupo() == null
                             ? ""
                             : producto.getGrupo().getNombre());
 
-            fila.put("tipo",
+            fila.put(
+                    "tipo",
                     producto.getTipoProducto() == null
                             ? ""
                             : producto.getTipoProducto().getNombre());
 
             fila.put(
                     "stock",
-                    stockPorVariante.getOrDefault(
-                            variante.getIdProductoVariante(), 0));
+                    existencia.getCantidad() == null
+                            ? 0
+                            : existencia.getCantidad());
 
-            fila.put("precio",
+            fila.put(
+                    "precio",
                     producto.getPrecio() == null
                             ? 0
                             : producto.getPrecio());
 
-            fila.put("temporada",
+            fila.put(
+                    "temporada",
                     producto.getTemporada() == null
                             ? "Sin temporada"
                             : producto.getTemporada().getNombre());
 
             fila.put("talla", variante.getTalla());
+
             fila.put("color", variante.getColor());
 
             fila.put("sucursalId", sucursalId);
+
             fila.put("sucursal", usuario.getSucursal().getNombre());
 
             resultado.add(fila);
@@ -246,7 +245,6 @@ public class ProductoController {
         dto.setNombre(producto.getNombre());
         dto.setDescripcion(producto.getDescripcion());
         dto.setPrecio(producto.getPrecio());
-        dto.setStock(producto.getStock());
 
         dto.setCodigoGrupo(
                 producto.getGrupo() != null
