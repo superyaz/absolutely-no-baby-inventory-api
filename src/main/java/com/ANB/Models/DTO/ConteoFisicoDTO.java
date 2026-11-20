@@ -5,51 +5,57 @@ import java.util.List;
 
 public final class ConteoFisicoDTO {
 
-    private ConteoFisicoDTO() {
-    }
+        private ConteoFisicoDTO() {
+        }
 
-    public record Resumen(
-            Long id,
-            String referencia,
-            String sucursal,
-            String estado,
-            LocalDateTime fechaInicio,
-            LocalDateTime fechaFin,
-            String responsable,
-            String observacion,
-            int totalVariantes,
-            int variantesContadas,
-            int porcentaje,
-            int diferencias,
-            int sobrantes,
-            int faltantes) {
-    }
+        public record Resumen(
+                        Long id,
+                        String referencia,
+                        String sucursal,
+                        String estado,
+                        LocalDateTime fechaInicio,
+                        LocalDateTime fechaFin,
+                        String responsable,
+                        String observacion,
+                        int totalVariantes,
+                        int variantesContadas,
+                        int porcentaje,
+                        int diferencias,
+                        int sobrantes,
+                        int faltantes) {
+        }
 
-    public record Detalle(
-            Long id,
-            Long productoVarianteId,
-            String codigoProducto,
-            String nombreProducto,
-            String codigoBarras,
-            String talla,
-            String color,
-            Integer cantidadSistema,
-            Integer cantidadFisica,
-            Integer diferencia,
-            String motivo) {
-    }
+        public record Detalle(
+                        Long id,
+                        Long productoVarianteId,
+                        String codigoProducto,
+                        String nombreProducto,
+                        String codigoBarras,
+                        String talla,
+                        String color,
+                        Integer cantidadSistema,
+                        Integer cantidadFisica,
+                        Integer diferencia,
+                        String motivo,
+                        Boolean contado) {
+        }
 
-    public record Consulta(
-            Resumen conteo,
-            List<Detalle> detalles) {
-    }
+        public record Consulta(
+                        Resumen conteo,
+                        List<Detalle> detalles) {
+        }
 
-    public record CrearRequest(String observacion) {
-    }
+        public record CrearRequest(
+                        String observacion) {
+        }
 
-    public record DetalleRequest(
-            Long productoVarianteId,
-            Integer cantidadFisica,
-            String motivo) {
-    }
+        public record DetalleRequest(
+                        Long productoVarianteId,
+                        Integer cantidadFisica,
+                        String motivo) {
+        }
+
+        public record DetalleLoteRequest(
+                        List<DetalleRequest> detalles) {
+        }
 }

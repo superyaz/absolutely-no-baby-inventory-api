@@ -93,23 +93,99 @@ public class ConteoFisicoService {
                 Usuario usuario = usuarioActivo(usuarioId);
                 Sucursal sucursal = sucursalActiva(usuario);
 
+                // 1. Obtener todas las variantes activas
+                // cuyos productos también estén activos.
+                List<ProductoVariante> variantes = varianteRepository
+                                .findByActivoTrue()
+                                .stream()
+                                .filter(variante -> variante.getProducto() != null
+                                                && Boolean.TRUE.equals(
+                                                                variante.getProducto().getActivo()))
+                                .sorted(
+                                                Comparator.comparing(
+                                                                (ProductoVariante variante) -> variante.getProducto()
+                                                                                .getNombre(),
+                                                                String.CASE_INSENSITIVE_ORDER).thenComparing(
+                                                                                ProductoVariante::getTalla,
+                                                                                String.CASE_INSENSITIVE_ORDER)
+                                                                .thenComparing(
+                                                                                ProductoVariante::getColor,
+                                                                                String.CASE_INSENSITIVE_ORDER))
+                                .toList();
+
+                // 2. Consultar las existencias de la sucursal.
+                Map<Long, Integer> existenciasPorVariante = new HashMap<>();
+
+                List<Inventario> inventarios = inventarioRepository.findBySucursal_IdSucursal(
+                                sucursal.getIdSucursal());
+
+                for (Inventario inventario : inventarios) {
+
+                        if (inventario.getProductoVariante() == null) {
+                                continue;
+                        }
+
+                        existenciasPorVariante.put(
+                                        inventario.getProductoVariante()
+                                                        .getIdProductoVariante(),
+                                        inventario.getCantidad() == null
+                                                        ? 0
+                                                        : inventario.getCantidad());
+                }
+
+                // 3. Crear la cabecera del conteo.
                 ConteoFisico conteo = new ConteoFisico();
 
                 conteo.setFechaInicio(LocalDateTime.now());
                 conteo.setEstado(EN_PROCESO);
+
                 conteo.setObservacion(
                                 limpiar(request == null ? null : request.observacion()));
+
                 conteo.setSucursal(sucursal);
                 conteo.setUsuario(usuario);
 
                 conteo = conteoRepository.save(conteo);
 
+                // 4. Crear automáticamente un detalle por cada variante.
+                List<DetalleConteo> detallesIniciales = new ArrayList<>();
+
+                for (ProductoVariante variante : variantes) {
+
+                        DetalleConteo detalle = new DetalleConteo();
+
+                        detalle.setConteoFisico(conteo);
+                        detalle.setProductoVariante(variante);
+
+                        int cantidadSistema = existenciasPorVariante.getOrDefault(
+                                        variante.getIdProductoVariante(),
+                                        0);
+
+                        // Fotografía inicial del inventario.
+                        detalle.setCantidadSistema(cantidadSistema);
+
+                        // Todavía no se ha realizado el conteo físico.
+                        detalle.setCantidadFisica(0);
+                        detalle.setDiferencia(0);
+                        detalle.setContado(false);
+                        detalle.setMotivo(null);
+
+                        detallesIniciales.add(detalle);
+                }
+
+                // 5. Guardar todos los detalles en una sola operación.
+                detalleRepository.saveAll(detallesIniciales);
+
+                // 6. Registrar auditoría.
                 registrarAuditoria(
                                 "CREAR",
                                 conteo,
                                 usuario,
                                 "Se creó una sesión de conteo físico para la sucursal "
-                                                + sucursal.getNombre() + ".");
+                                                + sucursal.getNombre()
+                                                + " con "
+                                                + detallesIniciales.size()
+                                                + " variantes precargadas.");
 
                 return resumen(conteo);
         }
@@ -118,6 +194,25 @@ public class ConteoFisicoService {
         public ConteoFisicoDTO.Consulta guardarDetalle(
                         Long conteoId,
                         ConteoFisicoDTO.DetalleRequest request,
+                        Long usuarioId) {
+
+                if (request == null) {
+                        throw new ResponseStatusException(
+                                        HttpStatus.BAD_REQUEST,
+                                        "Debes proporcionar los datos de la variante.");
+                }
+
+                return guardarDetalles(
+                                conteoId,
+                                new ConteoFisicoDTO.DetalleLoteRequest(
+                                                Collections.singletonList(request)),
+                                usuarioId);
+        }
+
+        @Transactional
+        public ConteoFisicoDTO.Consulta guardarDetalles(
+                        Long conteoId,
+                        ConteoFisicoDTO.DetalleLoteRequest request,
                         Long usuarioId) {
 
                 Usuario usuario = usuarioActivo(usuarioId);
@@ -131,64 +226,99 @@ public class ConteoFisicoService {
                                 EN_PROCESO,
                                 "Solo puedes modificar un conteo en proceso.");
 
+                // Validar la solicitud.
                 if (request == null
-                                || request.productoVarianteId() == null
-                                || request.cantidadFisica() == null
-                                || request.cantidadFisica() < 0) {
-
+                                || request.detalles() == null
+                                || request.detalles().isEmpty()) {
                         throw new ResponseStatusException(
                                         HttpStatus.BAD_REQUEST,
-                                        "Selecciona una variante e ingresa una cantidad física "
-                                                        + "igual o mayor que cero.");
+                                        "Debes enviar al menos una cantidad física.");
                 }
 
-                ProductoVariante variante = varianteRepository
-                                .findById(request.productoVarianteId())
-                                .orElseThrow(() -> new ResponseStatusException(
-                                                HttpStatus.NOT_FOUND,
-                                                "La variante seleccionada no existe."));
+                // Obtener todos los detalles precargados de esta sesión.
+                List<DetalleConteo> detallesExistentes = detalleRepository
+                                .findByConteoFisico_IdConteoFisicoOrderByIdDetalleConteoAsc(
+                                                conteoId);
 
-                if (!Boolean.TRUE.equals(variante.getActivo())
-                                || variante.getProducto() == null
-                                || !Boolean.TRUE.equals(variante.getProducto().getActivo())) {
+                // Crear un mapa para localizar rápidamente cada variante.
+                Map<Long, DetalleConteo> detallesPorVariante = new HashMap<>();
 
-                        throw new ResponseStatusException(
-                                        HttpStatus.BAD_REQUEST,
-                                        "No puedes contar una prenda o variante inactiva.");
+                for (DetalleConteo detalle : detallesExistentes) {
+
+                        detallesPorVariante.put(
+                                        detalle.getProductoVariante()
+                                                        .getIdProductoVariante(),
+                                        detalle);
                 }
 
-                DetalleConteo detalle = detalleRepository
-                                .findByConteoFisico_IdConteoFisicoAndProductoVariante_IdProductoVariante(
-                                                conteoId,
-                                                variante.getIdProductoVariante())
-                                .orElseGet(DetalleConteo::new);
+                Set<Long> variantesRecibidas = new HashSet<>();
 
-                if (detalle.getIdDetalleConteo() == null) {
+                List<DetalleConteo> detallesActualizados = new ArrayList<>();
 
-                        detalle.setConteoFisico(conteo);
-                        detalle.setProductoVariante(variante);
+                // Validar y actualizar cada cantidad recibida.
+                for (ConteoFisicoDTO.DetalleRequest linea : request.detalles()) {
 
-                        Inventario inventario = inventarioRepository
-                                        .buscarParaActualizar(
-                                                        conteo.getSucursal().getIdSucursal(),
-                                                        variante.getIdProductoVariante())
-                                        .orElse(null);
+                        if (linea == null
+                                        || linea.productoVarianteId() == null
+                                        || linea.cantidadFisica() == null
+                                        || linea.cantidadFisica() < 0) {
+                                throw new ResponseStatusException(
+                                                HttpStatus.BAD_REQUEST,
+                                                "Todas las variantes deben tener una cantidad "
+                                                                + "física entera igual o mayor que cero.");
+                        }
 
-                        detalle.setCantidadSistema(
-                                        inventario == null || inventario.getCantidad() == null
-                                                        ? 0
-                                                        : inventario.getCantidad());
+                        if (linea.motivo() != null
+                                        && linea.motivo().length() > 1000) {
+                                throw new ResponseStatusException(
+                                                HttpStatus.BAD_REQUEST,
+                                                "El motivo no puede superar los 1.000 caracteres.");
+                        }
+
+                        Long varianteId = linea.productoVarianteId();
+
+                        // Evitar variantes duplicadas en una misma petición.
+                        if (!variantesRecibidas.add(varianteId)) {
+                                throw new ResponseStatusException(
+                                                HttpStatus.BAD_REQUEST,
+                                                "La solicitud contiene una variante duplicada.");
+                        }
+
+                        // La variante debe pertenecer al conteo precargado.
+                        DetalleConteo detalle = detallesPorVariante.get(varianteId);
+
+                        if (detalle == null) {
+                                throw new ResponseStatusException(
+                                                HttpStatus.BAD_REQUEST,
+                                                "La variante "
+                                                                + varianteId
+                                                                + " no pertenece a este conteo físico.");
+                        }
+
+                        int cantidadSistema = detalle.getCantidadSistema() == null
+                                        ? 0
+                                        : detalle.getCantidadSistema();
+
+                        // Actualizar cantidad física.
+                        detalle.setCantidadFisica(linea.cantidadFisica());
+
+                        // Calcular diferencia.
+                        detalle.setDiferencia(
+                                        linea.cantidadFisica() - cantidadSistema);
+
+                        // Guardar motivo.
+                        detalle.setMotivo(limpiar(linea.motivo()));
+
+                        // Marcar como contada, incluso cuando la cantidad sea cero.
+                        detalle.setContado(true);
+
+                        detallesActualizados.add(detalle);
                 }
 
-                detalle.setCantidadFisica(request.cantidadFisica());
+                // Guardar todos los detalles juntos.
+                detalleRepository.saveAll(detallesActualizados);
 
-                detalle.setDiferencia(
-                                request.cantidadFisica() - detalle.getCantidadSistema());
-
-                detalle.setMotivo(limpiar(request.motivo()));
-
-                detalleRepository.save(detalle);
-
+                // Devolver el conteo actualizado.
                 return obtener(conteoId, usuarioId);
         }
 
@@ -208,17 +338,27 @@ public class ConteoFisicoService {
                                 EN_PROCESO,
                                 "Este conteo ya no está en proceso.");
 
-                int total = contarVariantesActivas();
+                // Obtener todas las variantes que se cargaron
+                // cuando comenzó este conteo.
+                List<DetalleConteo> detalles = detalleRepository
+                                .findByConteoFisico_IdConteoFisicoOrderByIdDetalleConteoAsc(
+                                                conteoId);
 
-                int contadas = (int) detalleRepository
-                                .countByConteoFisico_IdConteoFisico(conteoId);
+                int total = detalles.size();
+
+                int contadas = (int) detalles.stream()
+                                .filter(detalle -> Boolean.TRUE.equals(detalle.getContado()))
+                                .count();
 
                 if (total == 0 || contadas < total) {
 
                         throw new ResponseStatusException(
                                         HttpStatus.CONFLICT,
                                         "Aún faltan variantes por contar. Registradas: "
-                                                        + contadas + " de " + total + ".");
+                                                        + contadas
+                                                        + " de "
+                                                        + total
+                                                        + ".");
                 }
 
                 conteo.setEstado(POR_APROBAR);
@@ -256,13 +396,14 @@ public class ConteoFisicoService {
                                 .findByConteoFisico_IdConteoFisicoOrderByIdDetalleConteoAsc(
                                                 conteoId);
 
-                int total = contarVariantesActivas();
-
-                if (detalles.size() < total) {
+                if (detalles.isEmpty()
+                                || detalles.stream().anyMatch(
+                                                detalle -> !Boolean.TRUE.equals(detalle.getContado()))) {
 
                         throw new ResponseStatusException(
                                         HttpStatus.CONFLICT,
-                                        "El conteo no contiene todas las variantes activas.");
+                                        "No se puede aplicar el conteo porque todavía "
+                                                        + "existen variantes pendientes de contar.");
                 }
 
                 for (DetalleConteo detalle : detalles) {
@@ -350,8 +491,11 @@ public class ConteoFisicoService {
                                 .findByConteoFisico_IdConteoFisicoOrderByIdDetalleConteoAsc(
                                                 conteo.getIdConteoFisico());
 
-                int total = contarVariantesActivas();
-                int contadas = detalles.size();
+                int total = detalles.size();
+
+                int contadas = (int) detalles.stream()
+                                .filter(detalle -> Boolean.TRUE.equals(detalle.getContado()))
+                                .count();
 
                 int porcentaje = total == 0
                                 ? 0
@@ -431,16 +575,8 @@ public class ConteoFisicoService {
                                 detalle.getCantidadSistema(),
                                 detalle.getCantidadFisica(),
                                 detalle.getDiferencia(),
-                                detalle.getMotivo());
-        }
-
-        private int contarVariantesActivas() {
-
-                return (int) varianteRepository.findByActivoTrue()
-                                .stream()
-                                .filter(v -> v.getProducto() != null
-                                                && Boolean.TRUE.equals(v.getProducto().getActivo()))
-                                .count();
+                                detalle.getMotivo(),
+                                Boolean.TRUE.equals(detalle.getContado()));
         }
 
         private Usuario usuarioActivo(Long id) {

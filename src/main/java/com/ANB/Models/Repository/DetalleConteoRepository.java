@@ -8,14 +8,17 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface DetalleConteoRepository
-        extends JpaRepository<DetalleConteo, Long> {
+                extends JpaRepository<DetalleConteo, Long> {
 
-    List<DetalleConteo> findByConteoFisico_IdConteoFisicoOrderByIdDetalleConteoAsc(
-            Long conteoId);
+        List<DetalleConteo> findByConteoFisico_IdConteoFisicoOrderByIdDetalleConteoAsc(
+                        Long conteoId);
 
-    Optional<DetalleConteo> findByConteoFisico_IdConteoFisicoAndProductoVariante_IdProductoVariante(
-            Long conteoId,
-            Long varianteId);
+        Optional<DetalleConteo> findByConteoFisico_IdConteoFisicoAndProductoVariante_IdProductoVariante(
+                        Long conteoId,
+                        Long varianteId);
 
-    long countByConteoFisico_IdConteoFisico(Long conteoId);
+        long countByConteoFisico_IdConteoFisico(Long conteoId);
+
+        long countByConteoFisico_IdConteoFisicoAndContadoTrue(
+                        Long conteoId);
 }
