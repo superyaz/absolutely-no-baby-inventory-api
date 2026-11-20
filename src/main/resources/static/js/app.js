@@ -705,6 +705,7 @@ function inicializarFiltrosPremium() {
         'transferStatusFilter',
         'transferOriginStore',
         'countStatusFilter',
+        'countDetailStatusFilter',
         'alertSeverityFilter',
         'seasonTypeFilter',
         'seasonStatusFilter',
@@ -1956,6 +1957,9 @@ function setView(viewName) {
         void cargarDashboardKpis();
         void cargarHistorialMovimientos();
     }
+    if (viewName === 'inventory') {
+        void cargarInventario();
+    }
     if (viewName === 'transfers') {
         void cargarTransferencias();
     }
@@ -2854,6 +2858,7 @@ async function cerrarSesionActual() {
 }
 let conteosFisicos = [];
 let conteoFisicoActual = null;
+let borradoresConteoFisico = new Map();
 let variantesBusquedaConteo = [];
 let varianteSeleccionadaConteo = null;
 let usuarioConteoActual = null;
@@ -3268,6 +3273,12 @@ async function crearConteoFisico() {
 }
 async function abrirConteoFisico(id) {
     if (!id) return;
+    if (
+        Number(conteoFisicoActual?.conteo?.id || 0)
+        !== Number(id)
+    ) {
+        borradoresConteoFisico.clear();
+    }
     conteoFisicoActual = null;
     varianteSeleccionadaConteo = null;
     abrirModalCargandoConteo();
@@ -3413,6 +3424,19 @@ function renderizarDetalleConteoFisico() {
     if (searchPanel) {
         searchPanel.classList.toggle('hidden', !enProceso);
     }
+    const saveAllButton = document.querySelector(
+        '[data-count-save-all]'
+    );
+    if (saveAllButton) {
+        saveAllButton.classList.toggle(
+            'hidden',
+            !enProceso
+        );
+        saveAllButton.disabled =
+            !enProceso
+            || borradoresConteoFisico.size === 0
+            || guardandoDetalleConteo;
+    }
     const searchInput =
         document.getElementById('countVariantSearch');
     if (searchInput && !enProceso) {
@@ -3438,16 +3462,21 @@ function renderizarDetalleConteoFisico() {
             !enProceso
         );
         finalizeButton.disabled =
-            !enProceso || total === 0 || faltan > 0;
+            !enProceso
+            || total === 0
+            || faltan > 0
+            || borradoresConteoFisico.size > 0;
     }
     const finalizeHint =
         document.getElementById('countFinalizeHint');
     if (finalizeHint) {
         finalizeHint.textContent = enProceso
             ? (
-                faltan > 0
-                    ? `Faltan ${faltan} variantes por registrar antes de enviar a aprobación.`
-                    : 'Todas las variantes están registradas. Puedes enviar el conteo a aprobación.'
+                borradoresConteoFisico.size > 0
+                    ? `Tienes ${borradoresConteoFisico.size} cambio(s) sin guardar. Guarda las cantidades antes de finalizar.`
+                    : faltan > 0
+                        ? `Faltan ${faltan} variantes por registrar antes de enviar a aprobación.`
+                        : 'Todas las variantes están registradas. Puedes enviar el conteo a aprobación.'
             )
             : porAprobar
                 ? (
@@ -3463,88 +3492,461 @@ function renderizarDetalleConteoFisico() {
         detalles,
         enProceso
     );
-    limpiarEditorVarianteConteo();
+    actualizarEstadoBorradoresConteo();
 }
-function renderizarTablaDetalleConteo(detalles, editable) {
+function renderizarTablaDetalleConteo(
+    detalles,
+    editable
+) {
     const tbody =
         document.getElementById('countDetailRows');
     const tableWrap =
         document.getElementById('countDetailTableWrap');
     if (!tbody) return;
-    if (!detalles.length) {
+    const lista = Array.isArray(detalles)
+        ? detalles
+        : [];
+    const busqueda = (
+        document.getElementById('countDetailFilter')
+            ?.value || ''
+    ).trim().toLowerCase();
+    const filtroEstado =
+        document.getElementById('countDetailStatusFilter')
+            ?.value || 'TODOS';
+    const filtrados = lista.filter(item => {
+        const id = Number(item.productoVarianteId);
+        const texto = [
+            item.nombreProducto,
+            item.codigoProducto,
+            item.codigoBarras,
+            item.talla,
+            item.color
+        ]
+            .join(' ')
+            .toLowerCase();
+        const coincideBusqueda =
+            !busqueda || texto.includes(busqueda);
+        const contado =
+            Boolean(item.contado);
+        const tieneCambios =
+            borradoresConteoFisico.has(id);
+        let coincideEstado = true;
+        if (filtroEstado === 'PENDIENTES') {
+            coincideEstado = !contado;
+        }
+        if (filtroEstado === 'CONTADOS') {
+            coincideEstado = contado;
+        }
+        if (filtroEstado === 'CAMBIOS') {
+            coincideEstado = tieneCambios;
+        }
+        return coincideBusqueda && coincideEstado;
+    });
+    if (!filtrados.length) {
         tbody.innerHTML = `
             <tr>
                 <td colspan="6" class="subtle">
-                    Aún no se han registrado variantes en este conteo.
+                    ${lista.length
+                ? 'No encontramos variantes con los filtros seleccionados.'
+                : 'No hay variantes precargadas en este conteo.'
+            }
                 </td>
             </tr>
         `;
         if (tableWrap) {
-            tableWrap.classList.add('count-table-empty');
+            tableWrap.classList.toggle(
+                'count-table-empty',
+                lista.length === 0
+            );
         }
+        actualizarEstadoBorradoresConteo();
         return;
     }
     if (tableWrap) {
         tableWrap.classList.remove('count-table-empty');
     }
-    tbody.innerHTML = detalles.map(item => {
-        const delta = Number(item.diferencia) || 0;
-        const deltaText = String(delta);
-        const deltaClass =
-            delta > 0
-                ? 'count-positive'
-                : delta < 0
-                    ? 'count-negative'
-                    : 'count-neutral';
+    tbody.innerHTML = filtrados.map(item => {
+        const id =
+            Number(item.productoVarianteId);
+        const contado =
+            Boolean(item.contado);
+        const borrador =
+            borradoresConteoFisico.get(id);
+        const cantidadFisica = borrador
+            ? borrador.cantidadFisica
+            : contado
+                ? String(item.cantidadFisica)
+                : '';
+        const motivo = borrador
+            ? borrador.motivo
+            : item.motivo || '';
+        const cantidadValida =
+            cantidadFisica !== ''
+            && Number.isInteger(Number(cantidadFisica))
+            && Number(cantidadFisica) >= 0;
+        let diferencia = null;
+        if (cantidadValida) {
+            diferencia =
+                Number(cantidadFisica)
+                - Number(item.cantidadSistema || 0);
+        } else if (contado && !borrador) {
+            diferencia =
+                Number(item.diferencia) || 0;
+        }
+        const diferenciaTexto =
+            diferencia === null
+                ? '—'
+                : `${diferencia > 0 ? '+' : ''}${diferencia}`;
+        const diferenciaClass =
+            diferencia === null
+                ? 'count-neutral'
+                : diferencia > 0
+                    ? 'count-positive'
+                    : diferencia < 0
+                        ? 'count-negative'
+                        : 'count-neutral';
+        const estadoTexto = borrador
+            ? 'Sin guardar'
+            : contado
+                ? 'Contado'
+                : 'Pendiente';
+        const estadoClass = borrador
+            ? 'count-status-unsaved'
+            : contado
+                ? 'count-status-done'
+                : 'count-status-pending';
         return `
-            <tr>
+            <tr data-count-row="${id}">
                 <td class="count-product-cell">
                     <strong>
-                        ${escapeHTML(item.nombreProducto || 'Producto')}
+                        ${escapeHTML(
+            item.nombreProducto || 'Producto'
+        )}
                     </strong>
                     <small>
-                        ${escapeHTML(item.codigoProducto || '')}
+                        ${escapeHTML(
+            item.codigoProducto || ''
+        )}
+                        · Talla:
+                        ${escapeHTML(
+            item.talla || 'Sin talla'
+        )}
                         ·
-                        ${escapeHTML(item.talla || 'Sin talla')}
-                        ·
-                        ${escapeHTML(item.color || 'Sin color')}
+                        ${escapeHTML(
+            item.color || 'Sin color'
+        )}
                     </small>
                     <small class="mono">
-                        ${escapeHTML(item.codigoBarras || '')}
+                        ${escapeHTML(
+            item.codigoBarras || ''
+        )}
                     </small>
                 </td>
                 <td class="mono">
                     ${Number(item.cantidadSistema) || 0}
                 </td>
-                <td class="mono">
-                    ${Number(item.cantidadFisica) || 0}
+                <td>
+                    ${editable
+                ? `
+                                <input
+                                    class="input count-inline-quantity"
+                                    type="number"
+                                    min="0"
+                                    step="1"
+                                    inputmode="numeric"
+                                    placeholder="Cantidad"
+                                    data-count-physical="${id}"
+                                    value="${cantidadFisica === ''
+                    ? ''
+                    : escapeHTML(
+                        String(cantidadFisica)
+                    )
+                }"
+                                    aria-label="Cantidad física de ${escapeHTML(item.nombreProducto || 'producto')
+                }"
+                                />
+                            `
+                : `
+                                <span class="mono">
+                                    ${contado
+                    ? Number(item.cantidadFisica)
+                    : '—'
+                }
+                                </span>
+                            `
+            }
                 </td>
-                <td class="mono ${deltaClass}">
-                    ${delta > 0 ? '+' : ''}${deltaText}
+                <td class="mono ${diferenciaClass}">
+                    <span data-count-difference>
+                        ${diferenciaTexto}
+                    </span>
                 </td>
                 <td>
-                    ${escapeHTML(item.motivo || '—')}
+                    <span
+                        class="count-item-status ${estadoClass}"
+                        data-count-state
+                    >
+                        ${estadoTexto}
+                    </span>
                 </td>
                 <td>
-                    ${editable ? `
-                        <button
-                            class="icon-btn"
-                            type="button"
-                            title="Editar conteo"
-                            aria-label="Editar conteo"
-                            data-count-edit-variant="${Number(item.productoVarianteId)}"
-                        >
-                            <i class="fa-solid fa-pen"></i>
-                        </button>
-                    ` : `
-                        <span class="count-readonly">
-                            <i class="fa-solid fa-lock"></i>
-                        </span>
-                    `}
+                    ${editable
+                ? `
+                                <input
+                                    class="input count-inline-reason"
+                                    type="text"
+                                    maxlength="1000"
+                                    placeholder="Opcional"
+                                    data-count-reason="${id}"
+                                    value="${escapeHTML(motivo)}"
+                                    aria-label="Motivo de diferencia"
+                                />
+                            `
+                : escapeHTML(motivo || '—')
+            }
                 </td>
             </tr>
         `;
     }).join('');
+    actualizarEstadoBorradoresConteo();
+}
+function registrarCambioBorradorConteo(event) {
+    const campo = event.target;
+    if (
+        !campo.matches(
+            '[data-count-physical], [data-count-reason]'
+        )
+    ) {
+        return;
+    }
+    const id = Number(
+        campo.dataset.countPhysical
+        || campo.dataset.countReason
+    );
+    if (!id || !conteoFisicoActual) return;
+    const detalle =
+        (conteoFisicoActual.detalles || []).find(
+            item =>
+                Number(item.productoVarianteId) === id
+        );
+    if (!detalle) return;
+    const borrador =
+        borradoresConteoFisico.get(id)
+        || {
+            cantidadFisica: detalle.contado
+                ? String(detalle.cantidadFisica)
+                : '',
+            motivo: detalle.motivo || ''
+        };
+    if (campo.hasAttribute('data-count-physical')) {
+        borrador.cantidadFisica = campo.value;
+    } else {
+        borrador.motivo = campo.value;
+    }
+    borradoresConteoFisico.set(id, borrador);
+    actualizarFilaConteo(id);
+    actualizarEstadoBorradoresConteo();
+}
+function actualizarFilaConteo(id) {
+    const fila = document.querySelector(
+        `[data-count-row="${Number(id)}"]`
+    );
+    if (!fila) return;
+    const detalle =
+        (conteoFisicoActual?.detalles || []).find(
+            item =>
+                Number(item.productoVarianteId) === Number(id)
+        );
+    if (!detalle) return;
+    const borrador =
+        borradoresConteoFisico.get(Number(id));
+    const cantidad = borrador
+        ? borrador.cantidadFisica
+        : detalle.contado
+            ? String(detalle.cantidadFisica)
+            : '';
+    const valido =
+        cantidad !== ''
+        && Number.isInteger(Number(cantidad))
+        && Number(cantidad) >= 0;
+    let diferencia = '—';
+    if (valido) {
+        const delta =
+            Number(cantidad)
+            - Number(detalle.cantidadSistema || 0);
+        diferencia =
+            `${delta > 0 ? '+' : ''}${delta}`;
+    } else if (detalle.contado && !borrador) {
+        diferencia =
+            String(Number(detalle.diferencia) || 0);
+    }
+    const diferenciaElement =
+        fila.querySelector('[data-count-difference]');
+    if (diferenciaElement) {
+        diferenciaElement.textContent = diferencia;
+        const numero = Number(diferencia);
+        diferenciaElement.classList.toggle(
+            'count-positive',
+            diferencia !== '—' && numero > 0
+        );
+        diferenciaElement.classList.toggle(
+            'count-negative',
+            diferencia !== '—' && numero < 0
+        );
+        diferenciaElement.classList.toggle(
+            'count-neutral',
+            diferencia === '—' || numero === 0
+        );
+    }
+    const estadoElement =
+        fila.querySelector('[data-count-state]');
+    if (estadoElement) {
+        estadoElement.textContent =
+            borrador
+                ? 'Sin guardar'
+                : detalle.contado
+                    ? 'Contado'
+                    : 'Pendiente';
+        estadoElement.className =
+            'count-item-status '
+            + (
+                borrador
+                    ? 'count-status-unsaved'
+                    : detalle.contado
+                        ? 'count-status-done'
+                        : 'count-status-pending'
+            );
+    }
+}
+function actualizarEstadoBorradoresConteo() {
+    const cantidad =
+        borradoresConteoFisico.size;
+    const boton = document.querySelector(
+        '[data-count-save-all]'
+    );
+    const mensaje = document.getElementById(
+        'countCaptureDraftHint'
+    );
+    if (boton) {
+        boton.disabled =
+            cantidad === 0 || guardandoDetalleConteo;
+        boton.innerHTML = guardandoDetalleConteo
+            ? `
+                <i class="fa-solid fa-spinner fa-spin"></i>
+                Guardando...
+            `
+            : `
+                <i class="fa-solid fa-floppy-disk"></i>
+                Guardar cantidades
+                ${cantidad > 0 ? `(${cantidad})` : ''}
+            `;
+    }
+    if (mensaje) {
+        mensaje.innerHTML = cantidad > 0
+            ? `
+                <i class="fa-solid fa-circle-info"></i>
+                Tienes ${cantidad}
+                variante(s) con cambios pendientes de guardar.
+            `
+            : `
+                <i class="fa-solid fa-circle-info"></i>
+                Puedes completar varias cantidades y guardarlas
+                todas juntas. El cero también es una cantidad válida.
+            `;
+    }
+}
+async function guardarDetallesConteoFisico() {
+    if (
+        guardandoDetalleConteo
+        || !conteoFisicoActual?.conteo
+    ) {
+        return;
+    }
+    if (borradoresConteoFisico.size === 0) {
+        showToast(
+            'Sin cambios',
+            'No hay cantidades nuevas para guardar.'
+        );
+        return;
+    }
+    const detalles = [];
+    for (
+        const [varianteId, borrador]
+        of borradoresConteoFisico.entries()
+    ) {
+        const cantidad = borrador.cantidadFisica;
+        const cantidadFisica = Number(cantidad);
+        if (
+            cantidad === ''
+            || !Number.isInteger(cantidadFisica)
+            || cantidadFisica < 0
+        ) {
+            showToast(
+                'Cantidad inválida',
+                'Revisa las cantidades físicas. Todas deben ser enteros iguales o mayores que cero.'
+            );
+            document.querySelector(
+                `[data-count-physical="${varianteId}"]`
+            )?.focus();
+            return;
+        }
+        if (
+            String(borrador.motivo || '').length > 1000
+        ) {
+            showToast(
+                'Motivo inválido',
+                'Un motivo supera los 1.000 caracteres.'
+            );
+            return;
+        }
+        detalles.push({
+            productoVarianteId: Number(varianteId),
+            cantidadFisica,
+            motivo: borrador.motivo || ''
+        });
+    }
+    const boton = document.querySelector(
+        '[data-count-save-all]'
+    );
+    guardandoDetalleConteo = true;
+    actualizarEstadoBorradoresConteo();
+    try {
+        const id =
+            conteoFisicoActual.conteo.id;
+        const response = await fetch(
+            `/api/conteos-fisicos/${encodeURIComponent(id)}/detalles/lote`,
+            {
+                method: 'PUT',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    detalles
+                })
+            }
+        );
+        const resultado = await respuestaConteo(
+            response,
+            'No fue posible guardar las cantidades físicas.'
+        );
+        conteoFisicoActual = resultado;
+        borradoresConteoFisico.clear();
+        showToast(
+            'Conteo actualizado',
+            `Se guardaron ${detalles.length} variante(s) correctamente.`
+        );
+        renderizarDetalleConteoFisico();
+        await cargarConteosFisicos();
+    } catch (error) {
+        showToast(
+            'Error al guardar',
+            error.message
+        );
+    } finally {
+        guardandoDetalleConteo = false;
+        actualizarEstadoBorradoresConteo();
+    }
 }
 async function buscarVariantesConteo(termino) {
     const resultados =
@@ -3838,6 +4240,13 @@ async function guardarDetalleConteoFisico() {
 }
 async function finalizarConteoFisico() {
     if (!conteoFisicoActual?.conteo) return;
+    if (borradoresConteoFisico.size > 0) {
+        showToast(
+            'Cambios sin guardar',
+            'Guarda primero las cantidades físicas que acabas de modificar.'
+        );
+        return;
+    }
     const conteo = conteoFisicoActual.conteo;
     const pendientes =
         (Number(conteo.totalVariantes) || 0) -
@@ -3979,15 +4388,33 @@ function inicializarEventosConteoFisico() {
             'change',
             renderizarTarjetasConteo
         );
-    document.getElementById('countVariantSearch')
-        ?.addEventListener('input', event => {
-            window.clearTimeout(temporizadorBusquedaConteo);
-            const termino = event.target.value.trim();
-            temporizadorBusquedaConteo = window.setTimeout(
-                () => buscarVariantesConteo(termino),
-                280
+    document.getElementById('countDetailFilter')
+        ?.addEventListener('input', () => {
+            const enProceso =
+                normalizarEstadoConteo(
+                    conteoFisicoActual?.conteo?.estado
+                ) === 'EN PROCESO';
+            renderizarTablaDetalleConteo(
+                conteoFisicoActual?.detalles || [],
+                enProceso
             );
         });
+    document.getElementById('countDetailStatusFilter')
+        ?.addEventListener('change', () => {
+            const enProceso =
+                normalizarEstadoConteo(
+                    conteoFisicoActual?.conteo?.estado
+                ) === 'EN PROCESO';
+            renderizarTablaDetalleConteo(
+                conteoFisicoActual?.detalles || [],
+                enProceso
+            );
+        });
+    document.getElementById('countDetailRows')
+        ?.addEventListener(
+            'input',
+            registrarCambioBorradorConteo
+        );
 }
 function handleAction(action, id, triggerButton) {
     switch (action) {
@@ -6492,6 +6919,7 @@ async function ejecutarAccionTransferencia(
         );
         await cargarTransferencias();
         if (accion === 'aprobar' || accion === 'recibir') {
+            void cargarInventario();
             void cargarAlertasStock();
         }
         if (!document.querySelector(
@@ -6881,6 +7309,10 @@ document.addEventListener('click', async (event) => {
         await guardarDetalleConteoFisico();
         return;
     }
+    if (event.target.closest('[data-count-save-all]')) {
+        await guardarDetallesConteoFisico();
+        return;
+    }
     if (event.target.closest('[data-count-finalize]')) {
         await finalizarConteoFisico();
         return;
@@ -7243,6 +7675,7 @@ document.addEventListener('anb:producto-guardado', () => {
     void cargarDashboardKpis();
 });
 document.addEventListener('anb:movimiento-guardado', () => {
+    void cargarInventario();
     void cargarAlertasStock();
     void cargarDashboardKpis();
 });

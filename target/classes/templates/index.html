@@ -2141,111 +2141,62 @@
             <section class="count-capture-panel" id="countCapturePanel">
               <div class="count-section-heading">
                 <div>
-                  <span class="count-step-number">01</span>
+                  <span class="count-step-number"> 01 </span>
                   <div>
-                    <h4>Registrar cantidades</h4>
-                    <p>Busca la variante que estás contando físicamente.</p>
+                    <h4>Registrar cantidades físicas</h4>
+                    <p>
+                      Todas las variantes de tu sucursal están cargadas. Ingresa
+                      las cantidades encontradas directamente en la tabla.
+                    </p>
                   </div>
                 </div>
                 <span class="count-capture-chip">
-                  <i class="fa-solid fa-barcode"></i>
-                  Búsqueda inteligente
+                  <i class="fa-solid fa-clipboard-list"></i>
+                  Inventario precargado
                 </span>
               </div>
-              <div class="count-search-field">
-                <i class="fa-solid fa-magnifying-glass"></i>
-                <input
-                  class="input"
-                  id="countVariantSearch"
-                  type="search"
-                  autocomplete="off"
-                  placeholder="Código, prenda, talla, color o código de barras..."
-                />
-                <span>2+ caracteres</span>
-              </div>
-              <div
-                class="count-search-results hidden"
-                id="countVariantResults"
-              ></div>
-              <div
-                class="count-selected-variant hidden"
-                id="countSelectedVariant"
-              >
-                <div class="count-selected-header">
-                  <span class="count-selected-icon">
-                    <i class="fa-solid fa-shirt"></i>
-                  </span>
-                  <div>
-                    <strong id="countSelectedName">Producto</strong>
-                    <small id="countSelectedMeta"></small>
-                  </div>
-                  <button
-                    class="icon-btn"
-                    type="button"
-                    aria-label="Cancelar selección"
-                    title="Cancelar selección"
-                    data-count-cancel-selection
-                  >
-                    <i class="fa-solid fa-xmark"></i>
-                  </button>
-                </div>
-                <div class="count-quantity-grid">
-                  <div class="count-system-quantity">
-                    <span>Existencia en sistema</span>
-                    <strong id="countSelectedSystem">0</strong>
-                    <small>Fotografía al registrar esta variante</small>
-                  </div>
-                  <div class="field">
-                    <label for="countPhysicalQuantity">
-                      Cantidad física encontrada
-                    </label>
-                    <input
-                      class="input"
-                      id="countPhysicalQuantity"
-                      type="number"
-                      min="0"
-                      step="1"
-                      inputmode="numeric"
-                      placeholder="0"
-                    />
-                  </div>
-                </div>
-                <div class="field count-reason-field">
-                  <label for="countReason">
-                    Motivo de la diferencia
-                    <span>OPCIONAL</span>
-                  </label>
+              <div class="count-capture-toolbar">
+                <div class="count-search-field">
+                  <i class="fa-solid fa-magnifying-glass"></i>
                   <input
                     class="input"
-                    id="countReason"
-                    type="text"
-                    maxlength="1000"
-                    placeholder="Ej. Prenda ubicada en otra zona, daño, sobrante..."
+                    id="countDetailFilter"
+                    type="search"
+                    autocomplete="off"
+                    placeholder="Buscar prenda, código, talla o color..."
                   />
                 </div>
-                <div class="count-editor-actions">
-                  <span>
-                    <i class="fa-solid fa-circle-info"></i>
-                    La diferencia se calcula automáticamente.
-                  </span>
-                  <button
-                    class="btn btn-red"
-                    type="button"
-                    data-count-save-detail
-                  >
-                    <i class="fa-solid fa-floppy-disk"></i>
-                    Guardar cantidad
-                  </button>
-                </div>
+                <select
+                  class="select"
+                  id="countDetailStatusFilter"
+                  aria-label="Filtrar variantes del conteo físico"
+                >
+                  <option value="TODOS">Todas las variantes</option>
+                  <option value="PENDIENTES">Pendientes</option>
+                  <option value="CONTADOS">Contadas</option>
+                  <option value="CAMBIOS">Cambios sin guardar</option>
+                </select>
+                <button class="btn btn-red" type="button" data-count-save-all>
+                  <i class="fa-solid fa-floppy-disk"></i>
+                  Guardar cantidades
+                </button>
+              </div>
+              <div class="count-capture-help" id="countCaptureDraftHint">
+                <i class="fa-solid fa-circle-info"></i>
+                Puedes completar varias cantidades y guardarlas todas juntas. El
+                cero también es una cantidad válida.
               </div>
             </section>
             <section class="count-records-section">
               <div class="count-section-heading count-records-heading">
                 <div>
-                  <span class="count-step-number">02</span>
+                  <span class="count-step-number"> 02 </span>
                   <div>
-                    <h4>Variantes registradas</h4>
-                    <p>Revisa las cantidades y las diferencias detectadas.</p>
+                    <h4>Productos de la sucursal</h4>
+                    <p>
+                      Consulta las existencias del sistema, registra el conteo
+                      físico y revisa las diferencias.
+                    </p>
                   </div>
                 </div>
               </div>
@@ -2260,13 +2211,15 @@
                       <th>Sistema</th>
                       <th>Física</th>
                       <th>Diferencia</th>
+                      <th>Estado</th>
                       <th>Motivo</th>
-                      <th></th>
                     </tr>
                   </thead>
                   <tbody id="countDetailRows">
                     <tr>
-                      <td colspan="6" class="subtle">Cargando registros...</td>
+                      <td colspan="6" class="subtle">
+                        Cargando variantes del inventario...
+                      </td>
                     </tr>
                   </tbody>
                 </table>

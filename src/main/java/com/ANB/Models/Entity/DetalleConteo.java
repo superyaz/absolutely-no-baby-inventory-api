@@ -6,7 +6,7 @@ import jakarta.validation.constraints.PositiveOrZero;
 
 @Entity
 @Table(name = "detalle_conteo")
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 public class DetalleConteo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,6 +24,9 @@ public class DetalleConteo {
     @Column(name = "diferencia", nullable = false)
     private Integer diferencia;
 
+    @Column(name = "contado", nullable = false)
+    private Boolean contado = false;
+
     @Column(name = "motivo", nullable = true, length = 1000)
     private String motivo;
 
@@ -35,7 +38,8 @@ public class DetalleConteo {
     @JoinColumn(name = "producto_variante_id", referencedColumnName = "id_producto_variante", nullable = false)
     private ProductoVariante productoVariante;
 
-    public DetalleConteo() {}
+    public DetalleConteo() {
+    }
 
     public Long getIdDetalleConteo() {
         return idDetalleConteo;
@@ -93,4 +97,11 @@ public class DetalleConteo {
         this.productoVariante = productoVariante;
     }
 
+    public Boolean getContado() {
+        return contado;
+    }
+
+    public void setContado(Boolean contado) {
+        this.contado = contado;
+    }
 }
